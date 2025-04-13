@@ -1,0 +1,90 @@
+html {
+  box-sizing: border-box;
+}
+
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+@font-face {
+  font-family: bigRunes;
+  src: url('../assets/fonts/ComicRunes.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: runes;
+  src: url('../assets/fonts/Acadian_Runes-Regular_PERSONAL_USE.woff2') format('woff2');
+}
+
+:root{
+  --main-color: black;
+  --secondary-color: white;
+  --width: 1100px;
+  --height: 700px;
+}
+
+body{
+  background-color: var(--main-color);
+  width: var(--width);
+  height: var(--height);
+  margin: 5vh auto;
+  overflow: hidden;
+}
+
+.wrapper{
+  position: absolute;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  flex-flow: column;
+  color: gray;
+  height: var(--height);
+  width: var(--width);
+  background: radial-gradient(circle, rgba(26,26,26,1) -57%, rgba(0,0,0,1) 0%, rgba(3,3,3,1) 49%, rgba(26,26,26,1) 100%);
+}
+
+.menu__title{
+  margin-top: 4rem;
+  font-size: 10rem;
+  font-family: bigRunes;
+  color: var(--secondary-color);
+}
+
+.menu__start{
+  width: 10rem;
+  height: 4rem;
+  border: none;
+  background: none;
+  color: gray;
+  border-bottom: solid gray 0.3rem;
+  font-family: runes;
+  font-size: 2rem;
+  border-radius: 0.5rem;
+  margin-top: 3rem;
+}
+
+.menu__start:hover{
+  transition: 0.2s ease-in;
+  border: solid 0.2em var(--secondary-color);
+  color: var(--secondary-color);
+}
+
+.loading__text{
+  color: var(--secondary-color);
+  font-size: 3rem;
+  font-family: runes;
+}
+
+.warning__text{
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 1.4rem;
+  text-align: center;
+  line-height: 2rem;
+}
+
+.end__text{
+  font-family: runes;
+  font-size: 3rem;
+  color: var(--secondary-color);
+  text-align: center;
+}
