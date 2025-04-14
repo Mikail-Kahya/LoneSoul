@@ -4,8 +4,11 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
         this.scene = scene;
         this.floorY = floorY;
         this.CHARACTER_KEY = CHARACTER_KEY;
-        this.speed = 4;
+
+        this.speed = 2;
         this.jumpPower = 6;
+        this.width = 40;
+        this.height = 20;
     }
 
     setupPlayer() {
@@ -13,15 +16,25 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
         this.body.friction = 0;
 
         // Dimensions of player collision
-        this.body.vertices[0].x += 20;
-        this.body.vertices[1].x -= 20;
-        this.body.vertices[2].x -= 25;
-        this.body.vertices[3].x += 20;
+        const halfWidth = this.width * 0.5;
+        const halfHeight = this.height * 0.5;
+
+        // Bottom right
+        this.body.vertices[0].x += halfWidth;
+        this.body.vertices[0].y += halfHeight;
+
+        // Bottom left
+        this.body.vertices[1].x -= halfWidth;
+        this.body.vertices[1].y += halfHeight;
+
+        // Top left
+        this.body.vertices[2].x -= halfWidth;
+        this.body.vertices[2].y -= halfHeight;
+
+        // Top right
+        this.body.vertices[3].x += halfWidth;
+        this.body.vertices[3].y -= halfHeight;
         
-        this.body.vertices[0].y += 10;
-        this.body.vertices[1].y += 10;
-        this.body.vertices[2].y -= 5;
-        this.body.vertices[3].y -= 5;
 
         this.setFixedRotation() // Disable rotation of player
         this.body.label = `player`
