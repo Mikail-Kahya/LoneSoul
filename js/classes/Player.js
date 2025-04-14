@@ -5,7 +5,7 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
         this.floorY = floorY;
         this.CHARACTER_KEY = CHARACTER_KEY;
         this.speed = 4;
-        this.gravity = 6;
+        this.jumpPower = 6;
     }
 
     setupPlayer() {
@@ -28,22 +28,22 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
         this.createAnims();
     }
 
-    playerMovement(collisions, cursors, playerAbleToMove) {
+    playerMovement(collisions, dpad, playerAbleToMove) {
         if(collisions.onPlatforms[0] || collisions.onPlatforms[1]) {
             this.setVelocityX(0);
             this.play(`fly`, true);
-        } else if (cursors.left.isDown && playerAbleToMove) {
+        } else if (dpad.left.isDown && playerAbleToMove) {
             this.setVelocityX(-this.speed);
             this.play(`left`, true); // OR this.player.anims.play(`left`, true);
-        } else if (cursors.right.isDown && playerAbleToMove) {
+        } else if (dpad.right.isDown && playerAbleToMove) {
             this.setVelocityX(this.speed);
             this.play(`right`, true);
         } else {
             this.setVelocityX(0);
             this.play(`idle`, true);
         }
-        if (cursors.up.isDown && collisions.onGround && playerAbleToMove) {
-            this.setVelocityY(-this.gravity);
+        if (dpad.up.isDown && collisions.onGround && playerAbleToMove) {
+            this.setVelocityY(-this.jumpPower);
             collisions.onGround = false;
         }
     }
