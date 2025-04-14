@@ -7,21 +7,26 @@ export const getMic = () => {
     }
     window.touchStarted = () => {
         audioContext = getAudioContext();
-        if (audioContext.state !== `running`) {
+        if (audioContext.state !== `running`)
             audioContext.resume();
-        }
     }
 }
 const startMic = () => {
-    if (audioContext.state !== `running`) {
+    if (audioContext.state !== `running`)
         audioContext.resume();
-    }
+
     mic = new p5.AudioIn();
     mic.start(startPitch);
 }
 
 const startPitch = () => {
-    pitch = ml5.pitchDetection(`./js/model`, audioContext, mic.stream, modelLoaded);
+    try 
+    {
+        pitch = ml5.pitchDetection('./js/model', audioContext, mic.stream, modelLoaded);
+    } catch (err)
+    {
+        console.log(err);    
+    }
 }
 
 const modelLoaded = () => {
@@ -30,17 +35,18 @@ const modelLoaded = () => {
 
 const gotPitch = (error, frequency) => {
     freq = 0;
-    if (error) {
+    if (error) 
         console.error(error);
-    } else {
-        if (frequency) {
+    else 
+    {
+        if (frequency)
             freq = frequency;
-        }
     }
     pitch.getPitch(gotPitch);
     getFreq();
 }
 
-export const getFreq = () => {
+export const getFreq = () => 
+{
     return [freq, mic.getLevel()];
 }
