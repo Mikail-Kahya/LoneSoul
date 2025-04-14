@@ -1,52 +1,104 @@
-let freq, mic, pitch, audioContext;
+export default class Microphone {
+    // =========
+    // Singleton
+    // =========
+    static #instance;
+    static get instance(){
+        if (Microphone.#instance == undefined) {
+            Microphone.#instance = new Microphone();
 
-export const getMic = () => {
-    window.setup = async () => {
-        audioContext = await getAudioContext();
-        startMic();
+            window.setup = async () => {
+                Microphone.#instance.setup(getAudioContext());
+            }
+            window.touchStarted = () => {
+                Microphone.#instance.setup(getAudioContext());
+            }
+        }
+
+        return Microphone.#instance;
     }
-    window.touchStarted = () => {
-        audioContext = getAudioContext();
-        if (audioContext.state !== `running`)
-            audioContext.resume();
+
+    // ==== Private variables ====
+    #freq;
+    #mic;
+    #pitch;
+    #audioContext;
+
+
+    // mic use
+    #lowFreq = 0;
+    #highFreq = 0;
+    #level = 0;
+
+
+    // ====== Getters ========
+    get level() {
+        return this.#mic.getLevel();
     }
-}
-const startMic = () => {
-    if (audioContext.state !== `running`)
-        audioContext.resume();
 
-    mic = new p5.AudioIn();
-    mic.start(startPitch);
-}
-
-const startPitch = () => {
-    try 
-    {
-        pitch = ml5.pitchDetection('./js/model', audioContext, mic.stream, modelLoaded);
-    } catch (err)
-    {
-        console.log(err);    
+    get freq() {
+        return this.#freq;
     }
-}
 
-const modelLoaded = () => {
-    pitch.getPitch(gotPitch);
-}
 
-const gotPitch = (error, frequency) => {
-    freq = 0;
-    if (error) 
-        console.error(error);
-    else 
-    {
-        if (frequency)
-            freq = frequency;
+    // =======
+    // Methods
+    // =======
+    setup(audioContext) {
+        try {
+            this.#audioContext = audioContext;
+            this.#grabContext();
+            if (this.#audioContext.state !== `running`)
+                this.#audioContext.resume();
+        } catch(err) {
+            console.log(err);
+        }
     }
-    pitch.getPitch(gotPitch);
-    getFreq();
-}
 
-export const getFreq = () => 
-{
-    return [freq, mic.getLevel()];
+    #grabContext() {
+        if (this.#audioContext == undefined)
+        {
+            console.log("No context given");
+            return;
+        }
+
+        if (this.#mic !== undefined)
+            return;
+
+        this.#mic = new p5.AudioIn();
+        this.#mic.start(Microphone.instance.#startPitch);
+    }
+
+    #startPitch() {
+        console.log("Load pitch model");
+        let mic = Microphone.instance;
+        try {
+           mic.#pitch = ml5.pitchDetection('./js/model', mic.#audioContext, mic.#mic.stream, mic.#modelLoaded);
+
+        } catch(err) {
+            console.log(err);
+        }
+    }
+    
+    #modelLoaded() {
+        console.log('Model loaded correctly');
+        let mic = Microphone.instance;
+        mic.#pitch.getPitch(mic.#pitchLoaded);
+    }
+
+    #getPitch(error, frequency) {
+        let mic = Microphone.instance;
+        if (error) {
+            console.error(error);
+            mic.#freq = 0;
+            return 0;
+        }
+        mic.#freq = frequency;
+    }
+
+    #pitchLoaded() {
+        let mic = Microphone.instance;
+        mic.#pitch.getPitch(mic.#getPitch);
+        requestAnimationFrame(mic.#pitchLoaded);
+    }
 }

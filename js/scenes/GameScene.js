@@ -1,5 +1,5 @@
 import Player from "../classes/Player.js";
-import { getFreq } from "../classes/Mic.js";
+import Microphone from "../classes/Mic.js";
 
 export default class GameScene extends Phaser.Scene {
     constructor() {
@@ -65,9 +65,8 @@ export default class GameScene extends Phaser.Scene {
     }
 
     update() {
-        const soundInput = getFreq();
-        this.freq = soundInput[0];
-        this.micLevel = soundInput[1];
+        this.freq = Microphone.instance.freq;
+        this.micLevel = Microphone.instance.level;
         this.checkCollision();
         this.player.playerMovement(this.collisions, this.cursors, this.playerAbleToMove);
 

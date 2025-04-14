@@ -1,4 +1,4 @@
-import { getMic } from "../classes/Mic.js";
+import Microphone from "../classes/Mic.js";
 
 export default class MiccheckScene extends Phaser.Scene{
     constructor(){
@@ -7,8 +7,8 @@ export default class MiccheckScene extends Phaser.Scene{
     }
 
     init(){
-        document.querySelector(`.miccheck-wrapper`).style.display = `flex`;   
-        getMic();
+        document.querySelector(`.miccheck-wrapper`).style.display = `flex`; 
+        console.log(Microphone.instance); 
         this.checkMicActivated();
     }
 
