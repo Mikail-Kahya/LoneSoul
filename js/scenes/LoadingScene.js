@@ -1,31 +1,61 @@
 
 
 export default class LoadingScene extends Phaser.Scene {
+    #files;
+
     constructor() {
         super(`loading-scene`)
+        this.#files = [];
     }
 
     init(){
         document.querySelector(`.miccheck-wrapper`).style.display = `none`;   
         document.querySelector(`.loading-wrapper`).style.display = `flex`;
-        setTimeout(() => {
-            this.scene.start(`menu-scene`);
-        }, 4000);
+        //setTimeout(() => {
+        //    this.scene.start(`menu-scene`);
+        //}, 4000);
     }
 
     preload() {
-        this.load.svg('background', '../assets/img/background.svg', { scale: 1 });
-        this.load.svg('foreground', '../assets/img/foreground.svg', { scale: 1 });
-        this.load.svg('caveDarkness', '../assets/img/caveDarkness.svg', { scale: 1 });
+        this.#loadSvg('background');
+        this.#loadSvg('foreground');
+        this.#loadSvg('caveDarkness');
  
-        this.load.image(`treeObstacle`, `../assets/img/treeObstacle.png`);
-        this.load.image('platform', '../assets/img/platform.png');
-        this.load.image('ring', '../assets/img/holyRing.png');
-        this.load.image(`pillarObstacle`, `../assets/img/pillarObstacle.png`);
+        this.#loadImg('treeObstacle');
+        this.#loadImg('platform');
+        this.#loadImg('ring');
+        this.#loadImg('pillarObstacle');
         
-        this.load.atlas(`character`, `../assets/img/character.png`, `../assets/matterJson/character_atlas.json`);
-        this.load.atlas(`end`, `../assets/img/end.png`, `../assets/matterJson/end_atlas.json`);
+        this.#loadAtlas('character');
+        this.#loadAtlas('end');
         
         this.load.json(`map`, `../assets/matterJson/mapGround.json`);
+    }
+
+    update() {
+        // Start menu when all files have loaded
+        for (let idx = 0; idx < this.#files.length; ++idx)
+        {
+            const fileName = this.#files[idx];
+            if (!this.textures.exists(fileName))
+                return;
+        }
+
+        this.scene.start(`menu-scene`);
+    }
+
+    #loadSvg(name) {
+        this.load.svg(name, `../assets/img/${name}.svg`, { scale: 1 });
+        this.#files.push(name);
+    }
+
+    #loadImg(name) {
+        this.load.image(name, `../assets/img/${name}.png`);
+        this.#files.push(name);
+    }
+
+    #loadAtlas(name) {
+        this.load.atlas(name, `../assets/img/${name}.png`, `../assets/matterJson/${name}_atlas.json`);
+        this.#files.push(name);
     }
 }
