@@ -33,10 +33,14 @@ export default class Obstacle {
     }
 
     isLeveled() {
+        if (this.#levelThreshold < 0.000005)
+            return true;
         return Microphone.instance.level > this.#levelThreshold;
     }
 
     isPitched() {
+        if (this.#pitchThreshold < 0.000005)
+            return true;
         return Microphone.instance.freqRatio > this.#pitchThreshold;
     }
 
