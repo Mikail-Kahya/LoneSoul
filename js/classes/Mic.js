@@ -44,14 +44,22 @@ export default class Microphone {
 
     get freqRatio() {
         // get the ratio between the low and high frequentie put in a range between 0 - 1
-        console.log(this.#freq);
         if (this.#freq == 0 || this.#freq == NaN)
             return 0;
         const droppedFreq = this.#freq - this.#lowFreq;
         const ratio = droppedFreq / (this.#highFreq - this.#lowFreq);
-        console.log(ratio);
         return Math.clamp(ratio, 0, 1);
     }
+
+    // ====== Setters ========
+    set highFreq(freq) {
+        this.#highFreq = max(freq, this.#lowFreq);
+    }
+
+    set lowFreq(freq) {
+        this.#lowFreq = min(freq, this.#highFreq);
+    }
+
 
 
     // =======
