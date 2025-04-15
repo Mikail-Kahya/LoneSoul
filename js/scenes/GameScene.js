@@ -70,7 +70,7 @@ export default class GameScene extends Phaser.Scene {
         this.checkCollision();
         this.player.playerMovement(this.collisions, this.cursors, this.playerAbleToMove);
         
-        this.treeFall();
+        this.treeObstacle.update(this.player.x);
         this.platformRise();
         this.handleRings();
         this.pathObstacle();
@@ -176,10 +176,6 @@ export default class GameScene extends Phaser.Scene {
                 }
             }
         })
-    }
-
-    treeFall() {
-        this.treeObstacle.update(this.player.x);
     }
 
     platformRise() {
