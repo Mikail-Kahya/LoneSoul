@@ -24,7 +24,7 @@ export default class Obstacle {
         this.#pitchThreshold = pitchThreshold;
     }
 
-    update(posX) {
+    update(player) {
         
     }
 
