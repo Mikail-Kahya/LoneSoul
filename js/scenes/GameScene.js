@@ -1,18 +1,20 @@
 import Player from "../classes/Player.js";
-import Microphone from "../classes/Mic.js";
+import Debugger from "../classes/Debugger.js";
 import Time from "../classes/Time.js";
 import Tree from "../classes/obstacles/Tree.js";
+import HolyRing from "../classes/obstacles/HolyRing.js";
 
 export default class GameScene extends Phaser.Scene {
     constructor() {
         super(`game-scene`);
-        this.CHARACTER_KEY = `character`;
+
         this.player;
         this.playerAbleToMove = true;
-        this.cursors;
+        this.input = undefined;
         this.images = [];
         this.floorY = 1500;
         this.treeObstacle = undefined;
+        this.ringObstacle = undefined;
         this.mapPhysics;
         this.freq;
         this.micLevel;
@@ -51,12 +53,14 @@ export default class GameScene extends Phaser.Scene {
     create() {
         document.querySelector(`.menu-wrapper`).style.display = `none`;
 
-        this.cursors = this.input.keyboard.createCursorKeys();
+        this.input = this.input.keyboard.createCursorKeys();
         this.createBackground();
         this.createGround();
 
-        this.player = this.add.existing(new Player (this, this.CHARACTER_KEY, this.floorY))
-        this.player.setupPlayer();
+        const playerX = 100;
+        const playerY = this.floorY - 130;
+        this.player = this.add.existing(new Player (this, playerX, playerY));
+
         this.createForeground();
         this.setupCamera();
         Time.update(this.time.now);
@@ -64,14 +68,12 @@ export default class GameScene extends Phaser.Scene {
 
     update() {
         Time.update(this.time.now);
-
-        this.freq = Microphone.instance.freq;
-        this.micLevel = Microphone.instance.level;
-        this.checkCollision();
-        this.player.playerMovement(this.collisions, this.cursors, this.playerAbleToMove);
-        
+       
+        this.player.update(this.input);
         this.treeObstacle.update(this.player);
-        this.platformRise();
+        this.ringObstacle.update(this.player);
+
+        //this.platformRise();
         this.handleRings();
         this.pathObstacle();
         this.caveLightup();
@@ -88,17 +90,21 @@ export default class GameScene extends Phaser.Scene {
         const treeX = 1250;
         const treeY = this.floorY - 70;
         this.treeObstacle = new Tree(this, treeX, treeY);
+        
+        const ringX = 2800;
+        const ringY = this.floorY - 80;
+        this.ringObstacle = new HolyRing(this, ringX, ringY);
 
         this.matter.add.sprite(0, this.floorY - 200, null, null, { shape: this.mapPhysics.mapStartWall, label: `wall` }).setVisible(false);
         this.matter.add.sprite(600, this.floorY - 60, null, null, { shape: this.mapPhysics.mapGroundFloor1, label: `floor` }).setVisible(false);
         this.matter.add.sprite(2300, this.floorY - 60, null, null, { shape: this.mapPhysics.mapGroundFloor2, label: `floor` }).setVisible(false);
         this.matter.add.sprite(2925, this.floorY - 150, null, null, { shape: this.mapPhysics.mapGroundWall1, label: `wall` }).setVisible(false);
         this.matter.add.sprite(3200, this.floorY - 250, null, null, { shape: this.mapPhysics.mapGroundFloor3, label: `floor` }).setVisible(false);
-        this.matter.add.sprite(2800, this.floorY - 80, `platform`, null, { shape: this.mapPhysics.mapGroundPlatform, label: `floor` }).setOrigin(0.5, 0.9);
-        this.matter.add.sprite(2800, this.floorY - 101.5, null, null, { shape: this.mapPhysics.mapGroundPlatformActivation, label: `platform` }).setVisible(false);
+        //this.matter.add.sprite(2800, this.floorY - 80, `platform`, null, { shape: this.mapPhysics.mapGroundPlatform, label: `floor` }).setOrigin(0.5, 0.9);
+        //this.matter.add.sprite(2800, this.floorY - 101.5, null, null, { shape: this.mapPhysics.mapGroundPlatformActivation, label: `platform` }).setVisible(false);
         
-        this.rings = this.matter.add.sprite(2800, this.floorY - 328, `ring`, null, { shape: this.mapPhysics.holyRing, label: `ring` }).setCollisionCategory(null);
-        this.rings.alpha = 0;
+        //this.rings = this.matter.add.sprite(2800, this.floorY - 328, `ring`, null, { shape: this.mapPhysics.holyRing, label: `ring` }).setCollisionCategory(null);
+        //this.rings.alpha = 0;
 
         this.matter.add.sprite(3400, this.floorY - 265, `platform`, null, { shape: this.mapPhysics.mapGroundPlatform, label: `floor` }).setOrigin(0.5, 0.9);
         this.matter.add.sprite(3400, this.floorY - 286.5, null, null, { shape: this.mapPhysics.mapGroundPlatformActivation, label: `platform` }).setVisible(false);
@@ -150,7 +156,10 @@ export default class GameScene extends Phaser.Scene {
         this.cameras.main.setZoom(1.2);
     }
 
+    /*
     checkCollision() {
+        this.collisions.onGround = true;
+        return;
         this.matter.world.on(`collisionstart`, (event, bodyA, bodyB) => {
             if (bodyB.parent.label === `player`) {
                 if (bodyA.parent.label === `floor` || bodyA.parent.label === `platform`) {
@@ -177,6 +186,7 @@ export default class GameScene extends Phaser.Scene {
             }
         })
     }
+    */
 
     platformRise() {
         const currentY = this.player.y;
@@ -199,6 +209,7 @@ export default class GameScene extends Phaser.Scene {
     }
 
     handleRings() {
+        return;
         if (this.collisions.onRing) {
             this.rings.setCollisionCategory(1)
             this.rings.alpha += 0.1

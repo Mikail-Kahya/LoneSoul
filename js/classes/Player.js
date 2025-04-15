@@ -1,23 +1,38 @@
-export default class Player extends Phaser.Physics.Matter.Sprite {
-    constructor(scene, CHARACTER_KEY, floorY) {
-        super (scene.matter.world, 100, floorY - 120, CHARACTER_KEY);
-        this.scene = scene;
-        this.floorY = floorY;
-        this.CHARACTER_KEY = CHARACTER_KEY;
+import Debugger from "./Debugger.js";
 
-        this.speed = 2;
-        this.jumpPower = 6;
-        this.width = 40;
-        this.height = 20;
+export default class Player extends Phaser.Physics.Matter.Sprite {
+    #speed = 2;
+    #jumpPower = 4;
+    #width = 40;
+    #height = 20;
+    #isGrounded = false;
+    #allowInput = true;
+    #moveDir = 0;
+
+    constructor(scene, posX, posY) {
+        super (scene.matter.world, posX, posY);
+        
+        // Logic
+        this.body.label = `player`
+        this.body.gravityScale.y = 0.25;
+        this.#setupCollision();
+        this.#setupEvents(scene);
+
+        // Visuals
+        this.#createAnims(scene);
+        this.setState('idle');
+
+        Debugger.log(this);
     }
 
-    setupPlayer() {
+    #setupCollision() {
+        this.setFixedRotation() // Disable rotation of player
         this.body.frictionStatic = 0;
         this.body.friction = 0;
 
         // Dimensions of player collision
-        const halfWidth = this.width * 0.5;
-        const halfHeight = this.height * 0.5;
+        const halfWidth = this.#width * 0.5;
+        const halfHeight = this.#height * 0.5;
 
         // Bottom right
         this.body.vertices[0].x += halfWidth;
@@ -34,38 +49,33 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
         // Top right
         this.body.vertices[3].x += halfWidth;
         this.body.vertices[3].y -= halfHeight;
-        
-
-        this.setFixedRotation() // Disable rotation of player
-        this.body.label = `player`
-        this.createAnims();
     }
 
-    playerMovement(collisions, dpad, playerAbleToMove) {
-        if(collisions.onPlatforms[0] || collisions.onPlatforms[1]) {
-            this.setVelocityX(0);
-            this.play(`fly`, true);
-        } else if (dpad.left.isDown && playerAbleToMove) {
-            this.setVelocityX(-this.speed);
-            this.play(`left`, true); // OR this.player.anims.play(`left`, true);
-        } else if (dpad.right.isDown && playerAbleToMove) {
-            this.setVelocityX(this.speed);
-            this.play(`right`, true);
-        } else {
-            this.setVelocityX(0);
-            this.play(`idle`, true);
-        }
-        if (dpad.up.isDown && collisions.onGround && playerAbleToMove) {
-            this.setVelocityY(-this.jumpPower);
-            collisions.onGround = false;
-        }
+    #setupEvents(scene) {
+        scene.matter.world.on(`collisionend`, (event, bodyA, bodyB) => {
+            if (bodyA.body === this.body || bodyB.body === this.body)
+            {
+                const floorLabel = 'floor';
+                if (bodyA.parent.label === floorLabel || bodyB.parent.label === floorLabel)
+                    this.#isGrounded = false;
+            }
+        });
+
+        scene.matter.world.on(`collisionstart`, (event, bodyA, bodyB) => {
+            if (bodyA === this.body || bodyB === this.body)
+            {
+                const floorLabel = 'floor';
+                if (bodyA.parent.label === floorLabel || bodyB.parent.label === floorLabel)
+                    this.#isGrounded = true;
+            }
+        });
     }
 
-    createAnims(){
-
-        this.scene.anims.create({
+    #createAnims(scene) {
+        const key = 'character';
+        scene.anims.create({
             key: 'idle',
-            frames: this.scene.anims.generateFrameNames(this.CHARACTER_KEY, {
+            frames: scene.anims.generateFrameNames(key, {
                 prefix: `idle_`,
                 suffix: `.png`,
                 start: 1,
@@ -76,9 +86,9 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
             repeat: -1
         })
 
-        this.scene.anims.create({
+        scene.anims.create({
             key: 'right',
-            frames: this.scene.anims.generateFrameNames(this.CHARACTER_KEY, {
+            frames: scene.anims.generateFrameNames(key, {
                 prefix: `right_`,
                 suffix: `.png`,
                 start: 1,
@@ -89,9 +99,9 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
             repeat: -1
         })
 
-        this.scene.anims.create({
+        scene.anims.create({
             key: 'left',
-            frames: this.scene.anims.generateFrameNames(this.CHARACTER_KEY, {
+            frames: scene.anims.generateFrameNames(key, {
                 prefix: `left_`,
                 suffix: `.png`,
                 start: 1,
@@ -102,9 +112,9 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
             repeat: -1
         })
 
-        this.scene.anims.create({
+        scene.anims.create({
             key: 'fly',
-            frames: this.scene.anims.generateFrameNames(this.CHARACTER_KEY, {
+            frames: scene.anims.generateFrameNames(key, {
                 prefix: `fly_`,
                 suffix: `.png`,
                 start: 1,
@@ -114,5 +124,63 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
             frameRate: 8,
             repeat: -1
         })
+    }
+
+    // ====== PLAYER LOGIC =========
+
+    setState(state) {
+        switch(state) {
+            case 'idle':
+                this.setVelocityX(0);
+                this.#allowInput = true;
+                this.play('idle', true);
+                break;
+            case 'left':
+                this.#allowInput = true;
+                this.play('left', true);
+                break;
+            case 'right':
+                this.#allowInput = true;
+                this.play('right', true);
+                break;
+            case 'fly':
+                this.#allowInput = false;
+                this.play('fly', true);
+                break;
+        }
+    }
+
+    update(input)
+    {
+        this.setOrigin(0.5, 1);
+        if (this.#allowInput)
+            this.#movement(input)
+        else
+            this.setVelocityX(0);
+    }
+
+    #movement(input)
+    {
+        if (input.up.isDown && this.#isGrounded) {
+            this.setVelocityY(-this.#jumpPower);
+            this.#isGrounded = false;
+        }
+
+        if (input.left.isDown) {
+            if (this.#moveDir !== -1)
+                this.setState('left');
+            this.#moveDir = -1;
+            this.setVelocityX(-this.#speed);
+        } else if (input.right.isDown) {
+            if (this.#moveDir !== 1)
+                this.setState('right');
+            this.#moveDir = 1;
+            this.setVelocityX(this.#speed);
+        } else {
+            if (this.#moveDir !== 0)
+                this.setState('idle');
+            this.#moveDir = 0;
+            this.setVelocityX(0);
+        }
     }
 }
