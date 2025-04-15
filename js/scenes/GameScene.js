@@ -70,7 +70,7 @@ export default class GameScene extends Phaser.Scene {
         this.checkCollision();
         this.player.playerMovement(this.collisions, this.cursors, this.playerAbleToMove);
         
-        this.treeObstacle.update(this.player.x);
+        this.treeObstacle.update(this.player);
         this.platformRise();
         this.handleRings();
         this.pathObstacle();

@@ -37,8 +37,8 @@ export default class Tree extends Obstacle {
                                 { shape: scene.mapPhysics.treeObstacle, label: `floor` }).setAngle(pathAngle).setVisible(false);
     }
 
-    update(posX) {
-        if (!this.shouldUpdate(posX))
+    update(player) {
+        if (!this.shouldUpdate(player.x))
         {
             if (this.finished)
                 this.#fall();
