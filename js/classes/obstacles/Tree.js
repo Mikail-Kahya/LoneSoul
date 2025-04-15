@@ -25,7 +25,6 @@ export default class Tree extends Obstacle {
 
         const name = 'treeObstacle';
         const invisOffsetY = -130;
-        console.log(scene);
         
         this.#sprite = scene.add.image(posX, posY, name).setOrigin(0.5, 1).setAngle(this.#startAngle);
         this.#invisibleWall = scene.matter.add.sprite(posX, posY + invisOffsetY, null, null, { shape: scene.mapPhysics.mapStartWall }).setVisible(false);
