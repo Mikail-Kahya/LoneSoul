@@ -1,6 +1,8 @@
 import Obstacle from "./Obstacle.js";
 import Time from "../Time.js";
 import Microphone from "../Mic.js";
+import FrequencyCalculator from "../FrequencyCalculator.js";
+import Debugger from "../Debugger.js";
 
 // TODO ADD HIGH PITCH CALIBRATION HERE
 
@@ -10,10 +12,17 @@ export default class Tree extends Obstacle {
     #fallingSpeed = 10;
     #startAngle = 10;
     #shakeDir = 1;
+    #shakeTime = 2; // seconds of shaking and calibrating
+    #elapsedShakeTime = 0;
+    #frequencyCalculator = undefined;
+    
 
     constructor(scene, posX, posY)
     {
         super(posX - 150, posX + 1000, 0.05, 0);
+
+        this.#frequencyCalculator = new FrequencyCalculator();
+
         const name = 'treeObstacle';
         const invisOffsetY = -130;
         console.log(scene);
@@ -33,24 +42,34 @@ export default class Tree extends Obstacle {
         {
             if (this.finished)
                 this.#fall();
+            //else
+            //    this.#elapsedShakeTime = 0;
             return;    
         }
+
+
         this.#shake();
-        if (Microphone.instance.freqRatio > 0.7)
+        this.#elapsedShakeTime += Time.deltaTime;
+        this.#frequencyCalculator.sample();
+        if (this.#elapsedShakeTime > this.#shakeTime)
+        {
             this.finish();
+            Microphone.instance.highFreq = this.#frequencyCalculator.averageFreq;
+            Debugger.log(`High frequency: ${this.#frequencyCalculator.averageFreq}`);
+        }
     }
 
     #shake() {
         const angleSwapThreshold = 2;
         const shakeSpeed = 50;
 
-        const scaler = Microphone.instance.freqRatio * Time.deltaTime;
-        let newAngle = this.#sprite.angle + shakeSpeed * this.#shakeDir * scaler
+        const angleStep = Time.deltaTime * shakeSpeed;
+        let newAngle = this.#sprite.angle + angleStep * this.#shakeDir;
         
         if (Math.abs(newAngle - this.#startAngle) > angleSwapThreshold)
         {
             this.#shakeDir *= -1;
-            newAngle = this.#sprite.angle + shakeSpeed * this.#shakeDir * scaler
+            newAngle = this.#sprite.angle + angleStep * this.#shakeDir;
         }
 
         this.#sprite.angle = newAngle;
