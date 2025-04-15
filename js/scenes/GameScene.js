@@ -1,5 +1,7 @@
 import Player from "../classes/Player.js";
 import Microphone from "../classes/Mic.js";
+import Time from "../classes/Time.js";
+import Tree from "../classes/obstacles/Tree.js";
 
 export default class GameScene extends Phaser.Scene {
     constructor() {
@@ -10,13 +12,7 @@ export default class GameScene extends Phaser.Scene {
         this.cursors;
         this.images = [];
         this.floorY = 1500;
-        this.treeObstacle = {
-            sprite: undefined,
-            passed: false,
-            invisibleWall: undefined,
-            fallingSpeed: 0.1,
-            shake: false,
-        };
+        this.treeObstacle = undefined;
         this.mapPhysics;
         this.freq;
         this.micLevel;
@@ -48,6 +44,7 @@ export default class GameScene extends Phaser.Scene {
             fadeOut: undefined,
             fadeOutAlpha: 0,
         }
+        this.prevTime = 0;
     }
 
 
@@ -62,14 +59,17 @@ export default class GameScene extends Phaser.Scene {
         this.player.setupPlayer();
         this.createForeground();
         this.setupCamera();
+        Time.update(this.time.now);
     }
 
     update() {
+        Time.update(this.time.now);
+
         this.freq = Microphone.instance.freq;
         this.micLevel = Microphone.instance.level;
         this.checkCollision();
         this.player.playerMovement(this.collisions, this.cursors, this.playerAbleToMove);
-
+        
         this.treeFall();
         this.platformRise();
         this.handleRings();
@@ -85,16 +85,17 @@ export default class GameScene extends Phaser.Scene {
     createGround() {
         this.mapPhysics = this.cache.json.get(`map`);
 
+        const treeX = 1250;
+        const treeY = this.floorY - 70;
+        this.treeObstacle = new Tree(this, treeX, treeY);
+
         this.matter.add.sprite(0, this.floorY - 200, null, null, { shape: this.mapPhysics.mapStartWall, label: `wall` }).setVisible(false);
         this.matter.add.sprite(600, this.floorY - 60, null, null, { shape: this.mapPhysics.mapGroundFloor1, label: `floor` }).setVisible(false);
         this.matter.add.sprite(2300, this.floorY - 60, null, null, { shape: this.mapPhysics.mapGroundFloor2, label: `floor` }).setVisible(false);
         this.matter.add.sprite(2925, this.floorY - 150, null, null, { shape: this.mapPhysics.mapGroundWall1, label: `wall` }).setVisible(false);
         this.matter.add.sprite(3200, this.floorY - 250, null, null, { shape: this.mapPhysics.mapGroundFloor3, label: `floor` }).setVisible(false);
-        this.matter.add.sprite(1500, this.floorY - 60, null, null, { shape: this.mapPhysics.treeObstacle, label: `floor` }).setAngle(89).setVisible(false);
         this.matter.add.sprite(2800, this.floorY - 80, `platform`, null, { shape: this.mapPhysics.mapGroundPlatform, label: `floor` }).setOrigin(0.5, 0.9);
         this.matter.add.sprite(2800, this.floorY - 101.5, null, null, { shape: this.mapPhysics.mapGroundPlatformActivation, label: `platform` }).setVisible(false);
-        this.treeObstacle.sprite = this.add.image(1250, this.floorY - 70, `treeObstacle`).setOrigin(0.5, 1).setAngle(10);
-        this.treeObstacle.invisibleWall = this.matter.add.sprite(1250, this.floorY - 200, null, null, { shape: this.mapPhysics.mapStartWall }).setVisible(false),
         
         this.rings = this.matter.add.sprite(2800, this.floorY - 328, `ring`, null, { shape: this.mapPhysics.holyRing, label: `ring` }).setCollisionCategory(null);
         this.rings.alpha = 0;
@@ -178,28 +179,7 @@ export default class GameScene extends Phaser.Scene {
     }
 
     treeFall() {
-        // add certain pitch reached
-        if (this.player.x > 1100 && this.freq < 200 && this.treeObstacle.shake === false && this.treeObstacle.passed === false) {
-            setTimeout(() => {
-                this.treeObstacle.sprite.angle += this.freq / 600;
-                this.treeObstacle.shake = true
-            }, 50);
-        } else if (this.player.x > 1100 && this.freq < 200 && this.treeObstacle.shake === true && this.treeObstacle.passed === false) {
-            setTimeout(() => {
-                this.treeObstacle.sprite.angle -= this.freq / 600
-                this.treeObstacle.shake = false;
-            }, 50);
-        }
-        if (this.player.x > 1100 && this.freq > 200 && this.micLevel > 0.05) {
-            this.treeObstacle.passed = true;
-        }
-        if (this.treeObstacle.passed && this.treeObstacle.sprite.angle < 88) {
-            this.treeObstacle.sprite.angle += this.treeObstacle.fallingSpeed;
-            this.treeObstacle.fallingSpeed += 0.01
-        }
-        if (this.treeObstacle.sprite.angle > 80) {
-            this.treeObstacle.invisibleWall.destroy();
-        }
+        this.treeObstacle.update(this.player.x);
     }
 
     platformRise() {

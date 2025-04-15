@@ -1,3 +1,5 @@
+import * as Math from "../Utils/Utils.js";
+
 export default class Microphone {
     // =========
     // Singleton
@@ -27,17 +29,28 @@ export default class Microphone {
 
     // mic use
     #lowFreq = 0;
-    #highFreq = 0;
+    #highFreq = 200;
     #level = 0;
 
 
     // ====== Getters ========
     get level() {
-        return this.#mic.getLevel();
+        return this.#mic.getLevel() * 100;
     }
 
     get freq() {
         return this.#freq;
+    }
+
+    get freqRatio() {
+        // get the ratio between the low and high frequentie put in a range between 0 - 1
+        console.log(this.#freq);
+        if (this.#freq == 0 || this.#freq == NaN)
+            return 0;
+        const droppedFreq = this.#freq - this.#lowFreq;
+        const ratio = droppedFreq / (this.#highFreq - this.#lowFreq);
+        console.log(ratio);
+        return Math.clamp(ratio, 0, 1);
     }
 
 
