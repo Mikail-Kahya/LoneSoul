@@ -3,6 +3,7 @@ import MenuScene from './scenes/MenuScene.js';
 import MiccheckScene from './scenes/MiccheckScene.js'
 import GameScene from './scenes/GameScene.js';
 import LoadingScene from './scenes/LoadingScene.js'
+import Debugger from './classes/Debugger.js';
 
 const config = {
     type: Phaser.AUTO,
@@ -12,6 +13,7 @@ const config = {
     physics: {
         default: 'matter',
         matter: {
+            debug: Debugger.shouldDraw
         },
 
     },

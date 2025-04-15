@@ -3,6 +3,11 @@
 
 export default class Debugger {
     static #log = true;
+    static #draw = true;
+
+    static get shouldDraw() {
+        return this.#draw;
+    }
     
     static log(object) {
         if (this.#log)
