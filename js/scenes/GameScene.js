@@ -2,7 +2,8 @@ import Player from "../classes/Player.js";
 import Debugger from "../classes/Debugger.js";
 import Time from "../classes/Time.js";
 import Tree from "../classes/obstacles/Tree.js";
-import HolyRing from "../classes/obstacles/HolyRing.js";
+import RingObstacle from "../classes/obstacles/RingObstacle.js";
+import Environment from "../classes/Environment.js";
 
 export default class GameScene extends Phaser.Scene {
     constructor() {
@@ -52,6 +53,7 @@ export default class GameScene extends Phaser.Scene {
 
     create() {
         document.querySelector(`.menu-wrapper`).style.display = `none`;
+        Environment.scene = this;
 
         this.input = this.input.keyboard.createCursorKeys();
         this.createBackground();
@@ -93,7 +95,8 @@ export default class GameScene extends Phaser.Scene {
         
         const ringX = 2800;
         const ringY = this.floorY - 80;
-        this.ringObstacle = new HolyRing(this, ringX, ringY);
+        const ringHeight = 240;
+        this.ringObstacle = new RingObstacle(this, ringX, ringY, ringHeight);
 
         this.matter.add.sprite(0, this.floorY - 200, null, null, { shape: this.mapPhysics.mapStartWall, label: `wall` }).setVisible(false);
         this.matter.add.sprite(600, this.floorY - 60, null, null, { shape: this.mapPhysics.mapGroundFloor1, label: `floor` }).setVisible(false);
