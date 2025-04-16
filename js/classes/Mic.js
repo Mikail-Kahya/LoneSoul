@@ -42,6 +42,14 @@ export default class Microphone {
         return this.#freq;
     }
 
+    get lowFreq() {
+        return this.#lowFreq;
+    }
+
+    get highFreq() {
+        return this.#highFreq;
+    }
+
     get freqRatio() {
         // get the ratio between the low and high frequentie put in a range between 0 - 1
         if (this.#freq == 0 || this.#freq == NaN)
