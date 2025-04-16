@@ -2,7 +2,7 @@ import Microphone from "./Mic.js";
 
 // Stores frequencies and gives back the average
 // overides old samples if over sample count
-export default class Environment {
+export default class FrequencyCalculator {
     #averageFreq = 0;
     #frequencies = []
     #maxSamples = 100;
