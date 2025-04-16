@@ -29,7 +29,7 @@ export default class Microphone {
 
     // mic use
     #lowFreq = 0;
-    #highFreq = 200;
+    #highFreq = 800;
     #level = 0;
 
 
