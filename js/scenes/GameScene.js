@@ -3,17 +3,18 @@ import Debugger from "../classes/Debugger.js";
 import Time from "../classes/Time.js";
 import Tree from "../classes/obstacles/Tree.js";
 import RingObstacle from "../classes/obstacles/RingObstacle.js";
-import Environment from "../classes/Environment.js";
+import SpriteCrafter from "../classes/SpriteCrafter.js";
 
 export default class GameScene extends Phaser.Scene {
     constructor() {
         super(`game-scene`);
+        this.floorY = 1500;
+        this.worldWidth = 9074;
 
         this.player;
         this.playerAbleToMove = true;
         this.input = undefined;
         this.images = [];
-        this.floorY = 1500;
         this.treeObstacle = undefined;
         this.ringObstacle = undefined;
         this.mapPhysics;
@@ -53,14 +54,24 @@ export default class GameScene extends Phaser.Scene {
 
     create() {
         document.querySelector(`.menu-wrapper`).style.display = `none`;
-        Environment.scene = this;
+        SpriteCrafter.scene = this;
 
+        this.mapPhysics = this.cache.json.get(`map`);
         this.input = this.input.keyboard.createCursorKeys();
         this.createBackground();
         this.createGround();
 
-        const playerX = 100;
-        const playerY = this.floorY - 130;
+        const treeX = 1250;
+        const treeY = this.floorY - 70;
+        this.treeObstacle = new Tree(this, treeX, treeY);
+        
+        const ringX = 2800;
+        const ringY = this.floorY - 80;
+        const ringHeight = 240;
+        this.ringObstacle = new RingObstacle(this, ringX, ringY, ringHeight);
+
+        const playerX = 100 + 2000;
+        const playerY = this.floorY - 130 - 50;
         this.player = this.add.existing(new Player (this, playerX, playerY));
 
         this.createForeground();
@@ -83,31 +94,24 @@ export default class GameScene extends Phaser.Scene {
     }
 
     createBackground() {
-        this.add.image(9074 / 2, this.floorY - 425, `background`);
+        const yOffset = -425;
+        this.add.image(this.worldWidth * 0.5, this.floorY + yOffset, 'background');
     }
 
     createGround() {
-        this.mapPhysics = this.cache.json.get(`map`);
+        const wallLabel = 'wall';
+        const floorLabel = 'floor';
+        SpriteCrafter.addSprite(null, 0, this.floorY - 200, 0, this.mapPhysics.mapStartWall, wallLabel, false); // invis wall
+        SpriteCrafter.addSprite(null, 600, this.floorY - 60, 0, this.mapPhysics.mapGroundFloor1, floorLabel, false); // floor before tree
+        SpriteCrafter.addSprite(null, 2300, this.floorY - 50, 0, this.mapPhysics.mapGroundFloor2, floorLabel, false); // floor after tree
+        SpriteCrafter.addSprite(null, 2925, this.floorY - 150, 0, this.mapPhysics.mapGroundWall1, wallLabel, false); // wall at holy ring
+        SpriteCrafter.addSprite(null, 3200, this.floorY - 250, 0, this.mapPhysics.mapGroundFloor3, floorLabel, false); // floor after holy ring
 
-        const treeX = 1250;
-        const treeY = this.floorY - 70;
-        this.treeObstacle = new Tree(this, treeX, treeY);
-        
-        const ringX = 2800;
-        const ringY = this.floorY - 80;
-        const ringHeight = 240;
-        this.ringObstacle = new RingObstacle(this, ringX, ringY, ringHeight);
-
-        this.matter.add.sprite(0, this.floorY - 200, null, null, { shape: this.mapPhysics.mapStartWall, label: `wall` }).setVisible(false);
-        this.matter.add.sprite(600, this.floorY - 60, null, null, { shape: this.mapPhysics.mapGroundFloor1, label: `floor` }).setVisible(false);
-        this.matter.add.sprite(2300, this.floorY - 60, null, null, { shape: this.mapPhysics.mapGroundFloor2, label: `floor` }).setVisible(false);
-        this.matter.add.sprite(2925, this.floorY - 150, null, null, { shape: this.mapPhysics.mapGroundWall1, label: `wall` }).setVisible(false);
-        this.matter.add.sprite(3200, this.floorY - 250, null, null, { shape: this.mapPhysics.mapGroundFloor3, label: `floor` }).setVisible(false);
-        //this.matter.add.sprite(2800, this.floorY - 80, `platform`, null, { shape: this.mapPhysics.mapGroundPlatform, label: `floor` }).setOrigin(0.5, 0.9);
-        //this.matter.add.sprite(2800, this.floorY - 101.5, null, null, { shape: this.mapPhysics.mapGroundPlatformActivation, label: `platform` }).setVisible(false);
-        
-        //this.rings = this.matter.add.sprite(2800, this.floorY - 328, `ring`, null, { shape: this.mapPhysics.holyRing, label: `ring` }).setCollisionCategory(null);
-        //this.rings.alpha = 0;
+        //this.matter.add.sprite(0, this.floorY - 200, null, null, { shape: this.mapPhysics.mapStartWall, label: `wall` }).setVisible(false);
+        //this.matter.add.sprite(600, this.floorY - 60, null, null, { shape: this.mapPhysics.mapGroundFloor1, label: `floor` }).setVisible(false);
+        //this.matter.add.sprite(2300, this.floorY - 60, null, null, { shape: this.mapPhysics.mapGroundFloor2, label: `floor` }).setVisible(false);
+        //this.matter.add.sprite(2925, this.floorY - 150, null, null, { shape: this.mapPhysics.mapGroundWall1, label: `wall` }).setVisible(false);
+        //this.matter.add.sprite(3200, this.floorY - 250, null, null, { shape: this.mapPhysics.mapGroundFloor3, label: `floor` }).setVisible(false);
 
         this.matter.add.sprite(3400, this.floorY - 265, `platform`, null, { shape: this.mapPhysics.mapGroundPlatform, label: `floor` }).setOrigin(0.5, 0.9);
         this.matter.add.sprite(3400, this.floorY - 286.5, null, null, { shape: this.mapPhysics.mapGroundPlatformActivation, label: `platform` }).setVisible(false);
@@ -130,8 +134,9 @@ export default class GameScene extends Phaser.Scene {
     }
 
     createForeground() {
-        this.add.image(9074 / 2, this.floorY - 427, `foreground`);
-        this.tutorialText.obstacle2 = this.add.text(2650, this.floorY - 40, `Use your voice to fly`, { fontFamily: `runes`, color: `white`, fontSize: `2rem` }).setVisible(false);
+        const yOffset = -427;
+        this.add.image(this.worldWidth * 0.5 , this.floorY + yOffset, 'foreground').depth = SpriteCrafter.foregroundZ;
+
         this.tutorialText.obstacle3 = this.add.text(3100, this.floorY - 200, `Press R to reset bridge`, { fontFamily: `runes`, color: `white`, fontSize: `2rem` }).setVisible(false);
 
         this.caveObstacle.sprite = this.add.image(6690, this.floorY - 430, `caveDarkness`);

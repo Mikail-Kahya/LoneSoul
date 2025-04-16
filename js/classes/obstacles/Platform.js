@@ -19,7 +19,7 @@ export default class platform {
 
         const triggerOffsetY = -23.5;
         this.#triggerBox = scene.matter.add.sprite(posX, posY + triggerOffsetY, null, null, { shape: scene.mapPhysics.mapGroundPlatformActivation, label: platformName });
-        this.#triggerBox.setVisible(true);
+        this.#triggerBox.setVisible(Debugger.shouldDraw);
 
         scene.matter.world.on(`collisionstart`, (event, bodyA, bodyB) => {
             if (bodyB.parent.label !== `player`)

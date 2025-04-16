@@ -1,13 +1,12 @@
+import Debugger from "../Debugger.js";
+
 import Obstacle from "./Obstacle.js";
 import Platform from "./Platform.js";
-import Time from "../Time.js";
-import Microphone from "../Mic.js";
-import FrequencyCalculator from "../FrequencyCalculator.js";
-import Debugger from "../Debugger.js";
-import Environment from "../Environment.js";
 import HolyRing from "./HolyRing.js";
 
-// TODO ADD HIGH PITCH CALIBRATION HERE
+import Microphone from "../Mic.js";
+import SpriteCrafter from "../SpriteCrafter.js";
+import FrequencyCalculator from "../FrequencyCalculator.js";
 
 export default class RingObstacle extends Obstacle {
     #ring = undefined;
@@ -19,7 +18,6 @@ export default class RingObstacle extends Obstacle {
 
     constructor(scene, posX, posY, height)
     {
-        posX -= 2000;
         super(posX - 50, posX + 50, 0, 0);
 
         this.#frequencyCalculator = new FrequencyCalculator();
@@ -31,7 +29,7 @@ export default class RingObstacle extends Obstacle {
 
         // Create text
         const textOffsetY = 20;
-        this.#tutorialText = Environment.addText(posX, posY + textOffsetY, 'Use your low voice to fly');
+        this.#tutorialText = SpriteCrafter.addText(posX, posY + textOffsetY, 'Use your low voice to fly');
         this.#tutorialText.setVisible(false);
     }
 
@@ -70,8 +68,8 @@ export default class RingObstacle extends Obstacle {
 
     #rise(player) {
         const mic = Microphone.instance;
-        const riseLevelThreshold = 1;
-        const riseSpeed = 0.5;
+        const riseLevelThreshold = 0.5;
+        const riseSpeed = 1;
         const fallSpeed = 0.1;
         if (mic.level < riseLevelThreshold || mic.highFreq < mic.freq) {
             player.setVelocityY(fallSpeed);
@@ -82,13 +80,13 @@ export default class RingObstacle extends Obstacle {
         return true;
     }
 
-    #checkRing(player)
-    {
+    #checkRing(player) {
         const gap = 40;
         if (player.y > this.#ring.sprite.y - gap)
             return;
 
         this.finish();
+        this.#isActive = false;
         player.setState('idle');
         this.#ring.appear();
         Microphone.instance.highFreq = this.#frequencyCalculator.averageFreq;
