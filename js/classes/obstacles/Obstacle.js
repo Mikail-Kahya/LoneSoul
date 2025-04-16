@@ -24,9 +24,7 @@ export default class Obstacle {
         this.#pitchThreshold = pitchThreshold;
     }
 
-    update(player) {
-        
-    }
+    update(player) {}
 
     isInRange(posX) {
         return this.#activateX.min < posX && posX < this.#activateX.max;
@@ -44,8 +42,7 @@ export default class Obstacle {
         return Microphone.instance.freqRatio > this.#pitchThreshold;
     }
 
-    shouldUpdate(posX)
-    {
+    shouldUpdate(posX) {
         if (this.#finished)
             return false;
 
@@ -57,5 +54,9 @@ export default class Obstacle {
 
     finish() {
         this.#finished = true;
+    }
+
+    reset() {
+        this.#finished = false;
     }
 }
