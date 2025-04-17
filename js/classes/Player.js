@@ -152,11 +152,12 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
 
     update(input)
     {
-        this.setOrigin(0.5, 1);
         if (this.#allowInput)
-            this.#movement(input)
+            this.#movement(input);
         else
             this.setVelocityX(0);
+        
+        this.setOrigin(0.5, 1);
     }
 
     #movement(input)
