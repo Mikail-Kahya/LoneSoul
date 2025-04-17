@@ -1,9 +1,12 @@
-import Player from "../classes/Player.js";
 import Debugger from "../classes/Debugger.js";
+import SpriteCrafter from "../classes/SpriteCrafter.js";
 import Time from "../classes/Time.js";
+
+import Player from "../classes/Player.js";
+
 import Tree from "../classes/obstacles/Tree.js";
 import RingObstacle from "../classes/obstacles/RingObstacle.js";
-import SpriteCrafter from "../classes/SpriteCrafter.js";
+import PathObstacle from "../classes/obstacles/PathObstacle.js";
 
 export default class GameScene extends Phaser.Scene {
     constructor() {
@@ -11,12 +14,15 @@ export default class GameScene extends Phaser.Scene {
         this.floorY = 1500;
         this.worldWidth = 9074;
 
-        this.player;
-        this.playerAbleToMove = true;
         this.input = undefined;
+        this.player = undefined;
+        
         this.images = [];
+        
         this.treeObstacle = undefined;
         this.ringObstacle = undefined;
+        this.pathObstacle = undefined;
+
         this.mapPhysics;
         this.freq;
         this.micLevel;
@@ -48,7 +54,6 @@ export default class GameScene extends Phaser.Scene {
             fadeOut: undefined,
             fadeOutAlpha: 0,
         }
-        this.prevTime = 0;
     }
 
 
@@ -70,8 +75,14 @@ export default class GameScene extends Phaser.Scene {
         const ringHeight = 240;
         this.ringObstacle = new RingObstacle(this, ringX, ringY, ringHeight);
 
-        const playerX = 100 + 2000;
-        const playerY = this.floorY - 130 - 50;
+        const pathX = 3400;
+        const pathY = this.floorY - 265;
+        const pillarStartX = 3450;
+        const pathWidth = 770;
+        this.pathObstacle = new PathObstacle(this, pathX, pathY, pillarStartX, pathWidth, -100, 400);
+
+        const playerX = 100 + 3000;
+        const playerY = this.floorY - 130 - 400;
         this.player = this.add.existing(new Player (this, playerX, playerY));
 
         this.createForeground();
@@ -85,10 +96,8 @@ export default class GameScene extends Phaser.Scene {
         this.player.update(this.input);
         this.treeObstacle.update(this.player);
         this.ringObstacle.update(this.player);
+        this.pathObstacle.update(this.player);
 
-        //this.platformRise();
-        this.handleRings();
-        this.pathObstacle();
         this.caveLightup();
         this.endCutscene();
     }
@@ -107,22 +116,18 @@ export default class GameScene extends Phaser.Scene {
         SpriteCrafter.addSprite(null, 2925, this.floorY - 150, 0, this.mapPhysics.mapGroundWall1, wallLabel, false); // wall at holy ring
         SpriteCrafter.addSprite(null, 3200, this.floorY - 250, 0, this.mapPhysics.mapGroundFloor3, floorLabel, false); // floor after holy ring
 
-        //this.matter.add.sprite(0, this.floorY - 200, null, null, { shape: this.mapPhysics.mapStartWall, label: `wall` }).setVisible(false);
-        //this.matter.add.sprite(600, this.floorY - 60, null, null, { shape: this.mapPhysics.mapGroundFloor1, label: `floor` }).setVisible(false);
-        //this.matter.add.sprite(2300, this.floorY - 60, null, null, { shape: this.mapPhysics.mapGroundFloor2, label: `floor` }).setVisible(false);
-        //this.matter.add.sprite(2925, this.floorY - 150, null, null, { shape: this.mapPhysics.mapGroundWall1, label: `wall` }).setVisible(false);
-        //this.matter.add.sprite(3200, this.floorY - 250, null, null, { shape: this.mapPhysics.mapGroundFloor3, label: `floor` }).setVisible(false);
+        SpriteCrafter.addSprite(null, 3930, this.floorY - 175, 0, this.mapPhysics.mapGroundGap, wallLabel, false); // floor after holy ring
 
-        this.matter.add.sprite(3400, this.floorY - 265, `platform`, null, { shape: this.mapPhysics.mapGroundPlatform, label: `floor` }).setOrigin(0.5, 0.9);
-        this.matter.add.sprite(3400, this.floorY - 286.5, null, null, { shape: this.mapPhysics.mapGroundPlatformActivation, label: `platform` }).setVisible(false);
-        this.matter.add.sprite(3775, this.floorY - 175, null, null, { shape: this.mapPhysics.mapGroundGap, label: `wall` }).setVisible(false);
+        //this.matter.add.sprite(3400, this.floorY - 265, `platform`, null, { shape: this.mapPhysics.mapGroundPlatform, label: `floor` }).setOrigin(0.5, 0.9);
+        //this.matter.add.sprite(3400, this.floorY - 286.5, null, null, { shape: this.mapPhysics.mapGroundPlatformActivation, label: `platform` }).setVisible(false);
+        //this.matter.add.sprite(3775, this.floorY - 175, null, null, { shape: this.mapPhysics.mapGroundGap, label: `wall` }).setVisible(false);
 
 
-        for (let i = 0; i < this.pathObstacleGround.totalAmount; i++) {
-            const newPath = this.matter.add.sprite(this.pathObstacleGround.x, this.floorY * 2, `pillarObstacle`,  null, { shape: this.mapPhysics.pillarObstacle, label: `floor` });
-            this.pathObstacleGround.array.push(newPath);
-            this.pathObstacleGround.x += 7;
-        }
+        //for (let i = 0; i < this.pathObstacleGround.totalAmount; i++) {
+        //    const newPath = this.matter.add.sprite(this.pathObstacleGround.x, this.floorY * 2, `pillarObstacle`,  null, { shape: this.mapPhysics.pillarObstacle, label: `floor` });
+        //    this.pathObstacleGround.array.push(newPath);
+        //    this.pathObstacleGround.x += 7;
+        //}
 
         this.matter.add.sprite(4760, this.floorY - 450, null, null, { shape: this.mapPhysics.mapGroundFloor2, label: `floor` }).setVisible(false);
         this.matter.add.sprite(5900, this.floorY + 90, null, null, { shape: this.mapPhysics.mapGroundFloor1, label: `floor` }).setVisible(false);
@@ -216,18 +221,9 @@ export default class GameScene extends Phaser.Scene {
         }
     }
 
-    handleRings() {
-        return;
-        if (this.collisions.onRing) {
-            this.rings.setCollisionCategory(1)
-            this.rings.alpha += 0.1
-        } else {
-            this.rings.setCollisionCategory(null)
-            this.rings.alpha -= 0.1;
-        }
-    }
-
+    /*
     pathObstacle(){
+        return;
         if(this.collisions.onPlatforms[1] && !this.pathObstacleGround.finished){ 
             this.cameras.main.pan(this.player.x + 450, this.player.y - 150, 1000); 
             if (this.freq > 50 && this.micLevel > 0.05 && this.pathObstacleGround.currentPath < this.pathObstacleGround.totalAmount) {
@@ -257,6 +253,8 @@ export default class GameScene extends Phaser.Scene {
             this.collisions.onPlatforms[1] = false;
         }
     }
+
+    */
 
     caveLightup(){
         if(this.freq > 50 && this.micLevel > 0.1 && this.player.x > 5700){
