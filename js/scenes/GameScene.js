@@ -79,7 +79,7 @@ export default class GameScene extends Phaser.Scene {
         const pathY = this.floorY - 265;
         const pillarStartX = 3450;
         const pathWidth = 770;
-        this.pathObstacle = new PathObstacle(this, pathX, pathY, pillarStartX, pathWidth, -100, 400);
+        this.pathObstacle = new PathObstacle(this, pathX, pathY, pillarStartX, pathWidth, -50, 300);
 
         const playerX = 100 + 3000;
         const playerY = this.floorY - 130 - 400;
@@ -116,18 +116,7 @@ export default class GameScene extends Phaser.Scene {
         SpriteCrafter.addSprite(null, 2925, this.floorY - 150, 0, this.mapPhysics.mapGroundWall1, wallLabel, false); // wall at holy ring
         SpriteCrafter.addSprite(null, 3200, this.floorY - 250, 0, this.mapPhysics.mapGroundFloor3, floorLabel, false); // floor after holy ring
 
-        SpriteCrafter.addSprite(null, 3930, this.floorY - 175, 0, this.mapPhysics.mapGroundGap, wallLabel, false); // floor after holy ring
-
-        //this.matter.add.sprite(3400, this.floorY - 265, `platform`, null, { shape: this.mapPhysics.mapGroundPlatform, label: `floor` }).setOrigin(0.5, 0.9);
-        //this.matter.add.sprite(3400, this.floorY - 286.5, null, null, { shape: this.mapPhysics.mapGroundPlatformActivation, label: `platform` }).setVisible(false);
-        //this.matter.add.sprite(3775, this.floorY - 175, null, null, { shape: this.mapPhysics.mapGroundGap, label: `wall` }).setVisible(false);
-
-
-        //for (let i = 0; i < this.pathObstacleGround.totalAmount; i++) {
-        //    const newPath = this.matter.add.sprite(this.pathObstacleGround.x, this.floorY * 2, `pillarObstacle`,  null, { shape: this.mapPhysics.pillarObstacle, label: `floor` });
-        //    this.pathObstacleGround.array.push(newPath);
-        //    this.pathObstacleGround.x += 7;
-        //}
+        SpriteCrafter.addSprite(null, 3930, this.floorY - 175, 0, this.mapPhysics.mapGroundGap, wallLabel, false); // walls for the drop
 
         this.matter.add.sprite(4760, this.floorY - 450, null, null, { shape: this.mapPhysics.mapGroundFloor2, label: `floor` }).setVisible(false);
         this.matter.add.sprite(5900, this.floorY + 90, null, null, { shape: this.mapPhysics.mapGroundFloor1, label: `floor` }).setVisible(false);
