@@ -5,18 +5,23 @@ import Platform from "./Platform.js";
 import Pillar from "./Pillar.js";
 
 import Microphone from "../Mic.js";
+import FrequencyCalculator from "../FrequencyCalculator.js";
+import Time from "../Time.js";
 
 // min and max Y are offsets based on platform Y
 
 export default class PathObstacle extends Obstacle {
+    #freqCalculator = undefined;
     #camera = undefined;
+    #resetKey = undefined;
 
     #resetText = undefined;
     #platform = undefined;
     #pillars = []; 
     #nrPillars = 0;
     #isActive = false;
-    #swapPillar = true;
+    
+    #pillarTime = 0;
 
     #pathCenter = {x: 0, y:0 };
     #minY = 0;
@@ -28,11 +33,18 @@ export default class PathObstacle extends Obstacle {
         const margin = 50;
         super(x - margin, x + margin, 0.4, 0);
 
+        this.#freqCalculator = new FrequencyCalculator();
         this.#camera = scene.cameras.main;
+
+
+        Debugger.log(scene.input.keyboard);
+        this.#resetKey = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
+        Debugger.log(this.#resetKey);
+
+
         this.#minY = y - minY;
         this.#maxY = y - maxY;
-        //this.#pathCenter = { x: pillarStartX + width / 2, y: (this.#maxY - this.#minY) / 2 + this.#minY }
-        this.#pathCenter = { x: pillarStartX + width / 2, y: this.#minY }
+        this.#pathCenter = { x: pillarStartX + width / 2, y: this.#calcY(0.5) }
 
         this.#platform = new Platform(scene, x, y);
         this.#nrPillars = Math.ceil(width / Pillar.width);
@@ -45,6 +57,7 @@ export default class PathObstacle extends Obstacle {
         //this.#tutorialText = SpriteCrafter.addText(posX, posY + textOffsetY, 'Use your low voice to fly');
         //this.#tutorialText.setVisible(false);
 
+        
         if(true)
         {
             Microphone.instance.lowFreq = 100;
@@ -57,14 +70,43 @@ export default class PathObstacle extends Obstacle {
         
         this.#isActive = false;
         Debugger.log("Reset the obstacle");
+
+        // Move all pillars back down
+        this.#pillars.forEach(pillar => pillar.y = this.#minY);
+        this.#currentPillarIdx = 0;
+        this.#pillarTime = 0;
+        this.#freqCalculator.clear();
     }
 
     update(player) {
-        if (!this.isInRange(player.x) || this.finished)
+       
+         // Move pillars up and down
+         this.#pillars.forEach(pillar => pillar.update());
+
+        if (!this.isInRange(player.x))
             return;
 
-        // Move pillars when player is in range
-        this.#pillars.forEach(pillar => pillar.update());
+        if (this.finished) {
+            if (this.#resetKey.isDown)
+                this.reset();
+            return;
+        }
+
+        if (this.#currentPillarIdx === this.#pillars.length) {
+            // Pan all the time to keep camera there
+            const panTime = 1000;
+            this.#camera.pan(player.x + this.#camera.followOffset.x,  player.y - this.#camera.followOffset.y, panTime)
+
+            const pillar = this.#pillars[this.#pillars.length - 1];
+            if (!pillar.isMoving) {
+                Debugger.log("Deactivate path");
+    
+                player.setState('idle');
+                this.finish();
+            }
+
+            return;
+        }
 
         // Activates once on platform activation
         if (this.#platform.onPlatform && !this.#isActive) {
@@ -79,35 +121,32 @@ export default class PathObstacle extends Obstacle {
             return;
 
         // Pan all the time to keep camera there
-        this.#camera.pan(this.#pathCenter.x, this.#pathCenter.y, 1000)
+        const panTime = 1000;
+        this.#camera.pan(this.#pathCenter.x, this.#pathCenter.y, panTime)
         
         if (!this.isLeveled())
             return;
         
         // Move pillar one by one
         const pillar = this.#pillars[this.#currentPillarIdx];
+        const calculationTime = 0.05;
+        if (this.#pillarTime > calculationTime) {
+            // Get frequency and place pillar to that height
+            const mic = Microphone.instance;
+            const freq = this.#freqCalculator.averageFreq;
+            const ratio = (freq - mic.lowFreq) / (mic.highFreq - mic.lowFreq);
+            pillar.y = this.#calcY(min(ratio, 1));
 
-        if (this.#swapPillar) {
-            pillar.y = this.#calcY();
-            this.#swapPillar = false;
-        }
-        
-        if (!this.#swapPillar && !pillar.isMoving) {
+            this.#pillarTime = 0;
+            this.#freqCalculator.clear();
             ++this.#currentPillarIdx;
-            this.#swapPillar = true;
-        }
-
-
-        if (this.#currentPillarIdx == this.#pillars.length) {
-            Debugger.log("Deactivate path");
-
-            player.setState('idle');
-            this.finish();
+        } else {
+            this.#freqCalculator.sample();
+            this.#pillarTime += Time.deltaTime;
         }
     }
 
-    #calcY() {
-        const ratio = min(Microphone.instance.freqRatio, 1);
+    #calcY(ratio) {
         const dist = this.#maxY - this.#minY;
         return this.#minY + dist * ratio;
     }

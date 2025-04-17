@@ -14,7 +14,7 @@ export default class GameScene extends Phaser.Scene {
         this.floorY = 1500;
         this.worldWidth = 9074;
 
-        this.input = undefined;
+        this.keys = undefined;
         this.player = undefined;
         
         this.images = [];
@@ -62,7 +62,7 @@ export default class GameScene extends Phaser.Scene {
         SpriteCrafter.scene = this;
 
         this.mapPhysics = this.cache.json.get(`map`);
-        this.input = this.input.keyboard.createCursorKeys();
+        this.keys = this.input.keyboard.createCursorKeys();
         this.createBackground();
         this.createGround();
 
@@ -93,7 +93,7 @@ export default class GameScene extends Phaser.Scene {
     update() {
         Time.update(this.time.now);
        
-        this.player.update(this.input);
+        this.player.update(this.keys);
         this.treeObstacle.update(this.player);
         this.ringObstacle.update(this.player);
         this.pathObstacle.update(this.player);
@@ -159,58 +159,6 @@ export default class GameScene extends Phaser.Scene {
     }
 
     /*
-    checkCollision() {
-        this.collisions.onGround = true;
-        return;
-        this.matter.world.on(`collisionstart`, (event, bodyA, bodyB) => {
-            if (bodyB.parent.label === `player`) {
-                if (bodyA.parent.label === `floor` || bodyA.parent.label === `platform`) {
-                    this.collisions.onGround = true;
-                    this.collisions.onRing = false;
-                }
-
-                if (bodyA.parent.label === `platform`) {
-                    if (bodyB.position.x > 2780 && bodyB.position.x < 2880) {
-                        this.collisions.onPlatforms[0] = true;
-                    }
-                    if(bodyB.position.x > 3380 && bodyB.position.x < 3420){
-                        this.collisions.onPlatforms[1] = true;
-                    }
-                }
-                else {
-                    this.collisions.onPlatforms[0] = false;
-                    this.collisions.onPlatforms[1] = false;
-                }
-
-                if (bodyA.parent.label === `ring`) {
-                    this.collisions.onRing = true;
-                }
-            }
-        })
-    }
-    */
-
-    platformRise() {
-        const currentY = this.player.y;
-        if (this.collisions.onPlatforms[0]) {
-            this.tutorialText.obstacle2.setVisible(true);
-            
-            if (this.freq > 40 && this.micLevel > 0.05 && this.player.y > this.floorY - 430) {
-                // this.player.y = currentY - this.freq/100;
-                this.player.setVelocityY(-this.freq / 200)
-            } else {
-                this.player.setVelocityY(0);
-            }
-
-            if (this.player.y < this.floorY - 400) {
-                this.tutorialText.obstacle2.setVisible(false);
-                this.collisions.onRing = true;
-                this.collisions.onPlatforms[0] = false;
-            }
-        }
-    }
-
-    /*
     pathObstacle(){
         return;
         if(this.collisions.onPlatforms[1] && !this.pathObstacleGround.finished){ 
@@ -225,7 +173,7 @@ export default class GameScene extends Phaser.Scene {
                 }, 4000);
                 this.pathObstacleGround.finished = true; 
             }
-        } else if (this.pathObstacleGround.finished && this.player.x > 3300 && this.player.x < 5000 && this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R).isDown){
+        } else if (this.pathObstacleGround.finished && this.player.x > 3300 && this.player.x < 5000 && this.keys.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R).isDown){
             this.pathObstacleGround.array.forEach(element => {
                 element.y = this.floorY * 2;
             });
