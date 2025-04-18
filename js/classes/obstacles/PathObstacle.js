@@ -5,8 +5,9 @@ import Platform from "./Platform.js";
 import Pillar from "./Pillar.js";
 
 import Microphone from "../Mic.js";
-import FrequencyCalculator from "../FrequencyCalculator.js";
 import Time from "../Time.js";
+import SpriteCrafter from "../SpriteCrafter.js";
+import FrequencyCalculator from "../FrequencyCalculator.js";
 
 // min and max Y are offsets based on platform Y
 
@@ -53,9 +54,9 @@ export default class PathObstacle extends Obstacle {
             this.#pillars[idx] = new Pillar(scene, pillarStartX + idx * Pillar.width, this.#minY);
 
         // Create text
-        //const textOffsetY = 20;
-        //this.#tutorialText = SpriteCrafter.addText(posX, posY + textOffsetY, 'Use your low voice to fly');
-        //this.#tutorialText.setVisible(false);
+        const textOffsetY = 50;
+        this.#resetText = SpriteCrafter.addText(this.#pathCenter.x, this.#minY + textOffsetY, 'Press R to reset', 'black');
+        this.#resetText.setVisible(false);
 
         
         if(true)
@@ -76,6 +77,7 @@ export default class PathObstacle extends Obstacle {
         this.#currentPillarIdx = 0;
         this.#pillarTime = 0;
         this.#freqCalculator.clear();
+        this.#resetText.setVisible(false);
     }
 
     update(player) {
@@ -141,8 +143,7 @@ export default class PathObstacle extends Obstacle {
             return;
 
         this.#isActive = true;
-        player.setState('fly');
-        //this.#tutorialText.setVisible(true);    
+        player.setState('fly');   
     }
 
     #adjustPath() {
@@ -154,7 +155,7 @@ export default class PathObstacle extends Obstacle {
             const mic = Microphone.instance;
             const freq = this.#freqCalculator.averageFreq;
             const ratio = (freq - mic.lowFreq) / (mic.highFreq - mic.lowFreq);
-            pillar.y = this.#calcY(min(ratio, 1));
+            pillar.y = this.#calcY(Math.clamp(ratio, 0, 1));
 
             this.#pillarTime = 0;
             this.#freqCalculator.clear();
@@ -168,6 +169,7 @@ export default class PathObstacle extends Obstacle {
     #finishPath(player) {
         // Finish once the last pillar finished
         const lastPillar = this.#pillars[this.#pillars.length - 1];
+        this.#resetText.setVisible(true);
         if (!lastPillar.isMoving) {
             player.setState('idle');
             this.finish();
