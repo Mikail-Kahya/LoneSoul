@@ -3,8 +3,8 @@ import Debugger from "./Debugger.js";
 export default class Player extends Phaser.Physics.Matter.Sprite {
     #speed = 2;
     #jumpPower = 4;
-    #width = 40;
-    #height = 20;
+    #width = 50;
+    #height = 50;
     #isGrounded = false;
     #allowInput = true;
     #moveDir = 0;
