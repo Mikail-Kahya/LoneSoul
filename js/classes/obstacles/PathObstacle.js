@@ -36,16 +36,11 @@ export default class PathObstacle extends Obstacle {
 
         this.#freqCalculator = new FrequencyCalculator();
         this.#camera = scene.cameras.main;
-
-
-        Debugger.log(scene.input.keyboard);
         this.#resetKey = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
-        Debugger.log(this.#resetKey);
-
 
         this.#minY = y - minY;
         this.#maxY = y - maxY;
-        this.#pathCenter = { x: pillarStartX + width / 2, y: this.#calcY(0.5) }
+        this.#pathCenter = { x: pillarStartX + width / 2, y: this.#calcY(0.5) };
 
         this.#platform = new Platform(scene, x, y);
         this.#nrPillars = Math.ceil(width / Pillar.width);
@@ -57,13 +52,6 @@ export default class PathObstacle extends Obstacle {
         const textOffsetY = 50;
         this.#resetText = SpriteCrafter.addText(this.#pathCenter.x, this.#minY + textOffsetY, 'Press R to reset', 'black');
         this.#resetText.setVisible(false);
-
-        
-        if(true)
-        {
-            Microphone.instance.lowFreq = 100;
-            Microphone.instance.highFreq = 500;
-        }
     }
 
     reset() {
@@ -81,7 +69,6 @@ export default class PathObstacle extends Obstacle {
     }
 
     update(player) {
-       
          // Move pillars up and down
          this.#pillars.forEach(pillar => pillar.update());
 
@@ -89,6 +76,7 @@ export default class PathObstacle extends Obstacle {
             return;
 
         if (this.finished) {
+            // Allow resetting
             if (this.#resetKey.isDown)
                 this.reset();
             return;
