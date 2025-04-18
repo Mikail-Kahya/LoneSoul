@@ -30,8 +30,8 @@ export default class PathObstacle extends Obstacle {
 
     constructor(scene, x, y, pillarStartX, width, minY = -300, maxY = 300)
     {
-        const margin = 50;
-        super(x - margin, x + margin, 0.4, 0);
+        const margin = 100;
+        super(x - margin, x + width + margin, 0.4, 0);
 
         this.#freqCalculator = new FrequencyCalculator();
         this.#camera = scene.cameras.main;
@@ -68,11 +68,11 @@ export default class PathObstacle extends Obstacle {
     reset() {
         super.reset();
         
-        this.#isActive = false;
-        Debugger.log("Reset the obstacle");
-
         // Move all pillars back down
         this.#pillars.forEach(pillar => pillar.y = this.#minY);
+        
+        // Reset variables
+        this.#isActive = false;
         this.#currentPillarIdx = 0;
         this.#pillarTime = 0;
         this.#freqCalculator.clear();
@@ -91,42 +91,61 @@ export default class PathObstacle extends Obstacle {
                 this.reset();
             return;
         }
-
-        if (this.#currentPillarIdx === this.#pillars.length) {
-            // Pan all the time to keep camera there
-            const panTime = 1000;
-            this.#camera.pan(player.x + this.#camera.followOffset.x,  player.y - this.#camera.followOffset.y, panTime)
-
-            const pillar = this.#pillars[this.#pillars.length - 1];
-            if (!pillar.isMoving) {
-                Debugger.log("Deactivate path");
-    
-                player.setState('idle');
-                this.finish();
-            }
-
-            return;
-        }
-
-        // Activates once on platform activation
-        if (this.#platform.onPlatform && !this.#isActive) {
-            Debugger.log("Activate path");
-
-            this.#isActive = true;
-            player.setState('fly');
-            //this.#tutorialText.setVisible(true);       
-        }
-
+        
         if (!this.#isActive)
+        {
+            this.#activate(player);
             return;
+        }
 
+        if(this.#isAtEnd())
+        {
+            // Transition State
+            // --- Pan back to the player
+            const playerPos = { 
+                x: player.x + this.#camera.followOffset.x,
+                y: player.y - this.#camera.followOffset.y
+            };
+            this.#panTo(playerPos);
+            this.#finishPath(player);
+        } else {
+            // Building state
+            // --- Pan to obstacle
+            this.#panTo(this.#pathCenter);
+            if (this.isLeveled())
+                this.#adjustPath();   
+        }
+
+         
+    }
+
+    #calcY(ratio) {
+        const dist = this.#maxY - this.#minY;
+        return this.#minY + dist * ratio;
+    }
+
+    #panTo(pos) {
         // Pan all the time to keep camera there
         const panTime = 1000;
-        this.#camera.pan(this.#pathCenter.x, this.#pathCenter.y, panTime)
-        
-        if (!this.isLeveled())
+        this.#camera.pan(pos.x, pos.y, panTime)
+    }
+
+    #isAtEnd() {
+        return this.#currentPillarIdx === this.#pillars.length;
+    }
+
+    #activate(player) {
+        // Activates once on platform activation
+        const shouldActivate = this.#platform.onPlatform && !this.#isActive;
+        if (!shouldActivate)
             return;
-        
+
+        this.#isActive = true;
+        player.setState('fly');
+        //this.#tutorialText.setVisible(true);    
+    }
+
+    #adjustPath() {
         // Move pillar one by one
         const pillar = this.#pillars[this.#currentPillarIdx];
         const calculationTime = 0.05;
@@ -146,8 +165,12 @@ export default class PathObstacle extends Obstacle {
         }
     }
 
-    #calcY(ratio) {
-        const dist = this.#maxY - this.#minY;
-        return this.#minY + dist * ratio;
+    #finishPath(player) {
+        // Finish once the last pillar finished
+        const lastPillar = this.#pillars[this.#pillars.length - 1];
+        if (!lastPillar.isMoving) {
+            player.setState('idle');
+            this.finish();
+        }
     }
 }
