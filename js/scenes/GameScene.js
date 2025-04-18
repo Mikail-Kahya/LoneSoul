@@ -16,6 +16,7 @@ export default class GameScene extends Phaser.Scene {
 
         this.keys = undefined;
         this.player = undefined;
+        this.mapPhysics = undefined;
         
         this.images = [];
         
@@ -23,30 +24,6 @@ export default class GameScene extends Phaser.Scene {
         this.ringObstacle = undefined;
         this.pathObstacle = undefined;
 
-        this.mapPhysics;
-        this.freq;
-        this.micLevel;
-        this.collisions = {
-            onGround: false,
-            onPlatforms: [false, false],
-            onRing: false,
-        };
-        this.rings;
-        this.tutorialText = {
-            obstacle2: undefined,
-            obstacle3: undefined
-        };
-        this.pathObstacleGround = {
-            totalAmount: 770/7,
-            x: 3450,
-            array: [],
-            finished: false,
-            currentPath: 0
-        };
-        this.caveObstacle = {
-            sprite: undefined,
-            alpha: 1,
-        }
         this.end = {
             alpha: 0,
             sprite: undefined,
@@ -64,7 +41,7 @@ export default class GameScene extends Phaser.Scene {
         this.mapPhysics = this.cache.json.get(`map`);
         this.keys = this.input.keyboard.createCursorKeys();
         this.createBackground();
-        this.createGround();
+        this.createCollision();
 
         const treeX = 1250;
         const treeY = this.floorY - 70;
@@ -98,7 +75,6 @@ export default class GameScene extends Phaser.Scene {
         this.ringObstacle.update(this.player);
         this.pathObstacle.update(this.player);
 
-        this.caveLightup();
         this.endCutscene();
     }
 
@@ -107,33 +83,31 @@ export default class GameScene extends Phaser.Scene {
         this.add.image(this.worldWidth * 0.5, this.floorY + yOffset, 'background');
     }
 
-    createGround() {
+    createCollision() {
         const wallLabel = 'wall';
         const floorLabel = 'floor';
         SpriteCrafter.addSprite(null, 0, this.floorY - 200, 0, this.mapPhysics.mapStartWall, wallLabel, false); // invis wall
         SpriteCrafter.addSprite(null, 600, this.floorY - 60, 0, this.mapPhysics.mapGroundFloor1, floorLabel, false); // floor before tree
         SpriteCrafter.addSprite(null, 2300, this.floorY - 50, 0, this.mapPhysics.mapGroundFloor2, floorLabel, false); // floor after tree
+        
         SpriteCrafter.addSprite(null, 2925, this.floorY - 150, 0, this.mapPhysics.mapGroundWall1, wallLabel, false); // wall at holy ring
         SpriteCrafter.addSprite(null, 3200, this.floorY - 250, 0, this.mapPhysics.mapGroundFloor3, floorLabel, false); // floor after holy ring
 
-        SpriteCrafter.addSprite(null, 3930, this.floorY - 175, 0, this.mapPhysics.mapGroundGap, wallLabel, false); // walls for the drop
-
-        this.matter.add.sprite(4760, this.floorY - 450, null, null, { shape: this.mapPhysics.mapGroundFloor2, label: `floor` }).setVisible(false);
-        this.matter.add.sprite(5900, this.floorY + 90, null, null, { shape: this.mapPhysics.mapGroundFloor1, label: `floor` }).setVisible(false);
-        this.matter.add.sprite(7150, this.floorY + 91, null, null, { shape: this.mapPhysics.mapGroundFloor1, label: `floor` }).setVisible(false);
-        this.matter.add.sprite(5390, this.floorY - 250, null, null, { shape: this.mapPhysics.mapGroundDrop, label: `wall` }).setVisible(false);
-        this.matter.add.sprite(6910, this.floorY - 90, null, null, { shape: this.mapPhysics.mapGroundCave, label: `floor` }).setVisible(false);
-        this.matter.add.sprite(7790, this.floorY - 30, null, null, { shape: this.mapPhysics.mapGroundCavePassageWalls, label: `wall` }).setVisible(false);
-        this.matter.add.sprite(8300, this.floorY + 50, null, null, { shape: this.mapPhysics.mapGroundEnd, label: `floor` }).setVisible(false);
+        SpriteCrafter.addSprite(null, 3930, this.floorY - 175, 0, this.mapPhysics.mapGroundGap, wallLabel, false); // walls for the path gap
+        SpriteCrafter.addSprite(null, 4760, this.floorY - 450, 0, this.mapPhysics.mapGroundFloor2, floorLabel, false); // Floor after path
+        SpriteCrafter.addSprite(null, 5390, this.floorY - 250, 0, this.mapPhysics.mapGroundFloor2, wallLabel, false); // Drop after path into cave
+        
+        SpriteCrafter.addSprite(null, 5900, this.floorY + 90, 0, this.mapPhysics.mapGroundFloor1, floorLabel, false); // Floor for cave
+        SpriteCrafter.addSprite(null, 7150, this.floorY + 91, 0, this.mapPhysics.mapGroundFloor1, floorLabel, false); // Floor for cave
+        
+        SpriteCrafter.addSprite(null, 6910, this.floorY - 90, 0, this.mapPhysics.mapGroundCave, floorLabel, false); // Cave platforms
+        SpriteCrafter.addSprite(null, 7790, this.floorY + 30, 0, this.mapPhysics.mapGroundCavePassageWalls, wallLabel, false); // Cave end wall
+        SpriteCrafter.addSprite(null, 8300, this.floorY + 50, 0, this.mapPhysics.mapGroundEnd, floorLabel, false); // Cave end wall
     }
 
     createForeground() {
         const yOffset = -427;
         this.add.image(this.worldWidth * 0.5 , this.floorY + yOffset, 'foreground').depth = SpriteCrafter.foregroundZ;
-
-        this.tutorialText.obstacle3 = this.add.text(3100, this.floorY - 200, `Press R to reset bridge`, { fontFamily: `runes`, color: `white`, fontSize: `2rem` }).setVisible(false);
-
-        this.caveObstacle.sprite = this.add.image(6690, this.floorY - 430, `caveDarkness`);
         
         this.anims.create({
             key: 'end',
@@ -156,51 +130,6 @@ export default class GameScene extends Phaser.Scene {
         this.cameras.main.setFollowOffset(0, 150);
         this.cameras.main.setBounds(10, 0, 9070, this.floorY + 80)
         this.cameras.main.setZoom(1.2);
-    }
-
-    /*
-    pathObstacle(){
-        return;
-        if(this.collisions.onPlatforms[1] && !this.pathObstacleGround.finished){ 
-            this.cameras.main.pan(this.player.x + 450, this.player.y - 150, 1000); 
-            if (this.freq > 50 && this.micLevel > 0.05 && this.pathObstacleGround.currentPath < this.pathObstacleGround.totalAmount) {
-                this.pathObstacleGround.array[this.pathObstacleGround.currentPath].y = this.floorY + 300 - (this.freq * 1.5);
-                this.pathObstacleGround.currentPath ++;
-            }               
-            if (this.pathObstacleGround.currentPath >= this.pathObstacleGround.totalAmount) {
-                setTimeout(() => {
-                    this.tutorialText.obstacle3.setVisible(true);
-                }, 4000);
-                this.pathObstacleGround.finished = true; 
-            }
-        } else if (this.pathObstacleGround.finished && this.player.x > 3300 && this.player.x < 5000 && this.keys.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R).isDown){
-            this.pathObstacleGround.array.forEach(element => {
-                element.y = this.floorY * 2;
-            });
-            this.pathObstacleGround.currentPath = 0;
-            this.pathObstacleGround.x = 3450;
-            this.pathObstacleGround.finished = false;
-        }
-
-        if(this.player.x > 3300 && this.player.x < 5100 && this.player.y > this.floorY + 200){
-            this.player.setPosition(3400, 400);
-        }
-        if (this.pathObstacleGround.finished) {
-            this.collisions.onGround = true;
-            this.collisions.onPlatforms[1] = false;
-        }
-    }
-
-    */
-
-    caveLightup(){
-        if(this.freq > 50 && this.micLevel > 0.1 && this.player.x > 5700){
-            this.caveObstacle.alpha -= this.freq / 10000;;
-        }
-        if(this.caveObstacle.alpha < 1 && this.freq < 50){
-            this.caveObstacle.alpha += 0.01;
-        }
-        this.caveObstacle.sprite.alpha = this.caveObstacle.alpha;
     }
 
     endCutscene(){
