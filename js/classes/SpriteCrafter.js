@@ -11,7 +11,6 @@ export default class SpriteCrafter {
     static playerZ = 600;
     static #interactZ = 5;
     static #textZ = 1500;
-    static #textFont = { fontFamily: `runes`, color: `white`, fontSize: `2rem` };
 
     // Colllision
     static #floorLabel = 'floor';
@@ -34,8 +33,13 @@ export default class SpriteCrafter {
         return sprite;
     }
 
-    static addText(posX, posY, text) {
-        const textObject = this.#scene.add.text(posX, posY, text, this.#textFont);
+    static addText(posX, posY, text, color = 'white') {
+        const font = {
+            fontFamily: `runes`, 
+            color: color, 
+            fontSize: `2rem` 
+        }
+        const textObject = this.#scene.add.text(posX, posY, text, font);
         textObject.setOrigin(0.5, 0.5);
         textObject.w = this.#textZ;
         textObject.z = this.#textZ;
