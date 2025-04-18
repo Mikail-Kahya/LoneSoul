@@ -19,16 +19,29 @@ html {
 :root{
   --main-color: black;
   --secondary-color: white;
-  --width: 1100px;
-  --height: 700px;
+  --width: 100vw;
+  --height: 100vh;
 }
 
 body{
   background-color: var(--main-color);
   width: var(--width);
   height: var(--height);
-  margin: 5vh auto;
+  margin: 0 auto;
   overflow: hidden;
+
+  display: flex;
+  justify-content: center;
+  background: radial-gradient(circle, rgba(26,26,26,1) -57%, rgba(0,0,0,1) 0%, rgba(3,3,3,1) 49%, rgba(26,26,26,1) 100%);
+}
+
+canvas {
+  height: 100vh;
+  margin: 0 auto;
+}
+
+.p5Canvas {
+  display: none;
 }
 
 .wrapper{
