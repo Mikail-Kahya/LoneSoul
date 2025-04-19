@@ -59,7 +59,7 @@ export default class Cutscene {
 
         Debugger.log(`End after ${this.#playTime} seconds`);
         setTimeout(() => {
-            Debugger.log(this);
+            this.#sprite.anims.stop(null, true);
             this.#isDone = true;
         }, this.#playTime * 1000);
     }

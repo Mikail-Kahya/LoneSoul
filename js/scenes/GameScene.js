@@ -39,9 +39,9 @@ export default class GameScene extends Phaser.Scene {
         this.mapPhysics = this.cache.json.get(`map`);
         this.keys = this.input.keyboard.createCursorKeys();
 
-        const playerX = 100 + 8000;
-        const playerY = this.floorY - 130;
-        this.player = this.add.existing(new Player (this, playerX, playerY));
+        const debugPos = Debugger.playerPos;
+        const playerPos = { x: 100, y: this.floorY - 130 };
+        this.player = this.add.existing(new Player (this, playerPos.x + debugPos.x, playerPos.y + debugPos.y));
 
         this.createBackground();
         this.createCollision();
@@ -123,7 +123,7 @@ export default class GameScene extends Phaser.Scene {
     createCutscene() {
         const anim = {
             start: 2,
-            end: 21,
+            end: 20,
             frameRate: 4
         }
         const pos = { x: 9070, y: this.floorY - 130 };
