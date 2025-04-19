@@ -7,6 +7,7 @@ import Player from "../classes/Player.js";
 import Tree from "../classes/obstacles/Tree.js";
 import RingObstacle from "../classes/obstacles/RingObstacle.js";
 import PathObstacle from "../classes/obstacles/PathObstacle.js";
+import LightObstacle from "../classes/obstacles/LightObstacle.js";
 
 export default class GameScene extends Phaser.Scene {
     constructor() {
@@ -58,7 +59,12 @@ export default class GameScene extends Phaser.Scene {
         const pathWidth = 770;
         this.pathObstacle = new PathObstacle(this, pathX, pathY, pillarStartX, pathWidth, -50, 300);
 
-        const playerX = 100 + 3000;
+        const caveX = 6690;
+        const caveY = this.floorY - 430;
+        const caveWidth = 2000;
+        this.lightObstacle = new LightObstacle(this, caveX, caveY, caveWidth);
+
+        const playerX = 100 + 6000;
         const playerY = this.floorY - 130 - 400;
         this.player = this.add.existing(new Player (this, playerX, playerY));
 
@@ -74,6 +80,7 @@ export default class GameScene extends Phaser.Scene {
         this.treeObstacle.update(this.player);
         this.ringObstacle.update(this.player);
         this.pathObstacle.update(this.player);
+        this.lightObstacle.update(this.player);
 
         this.endCutscene();
     }
@@ -95,14 +102,14 @@ export default class GameScene extends Phaser.Scene {
 
         SpriteCrafter.addSprite(null, 3930, this.floorY - 175, 0, this.mapPhysics.mapGroundGap, wallLabel, false); // walls for the path gap
         SpriteCrafter.addSprite(null, 4760, this.floorY - 450, 0, this.mapPhysics.mapGroundFloor2, floorLabel, false); // Floor after path
-        SpriteCrafter.addSprite(null, 5390, this.floorY - 250, 0, this.mapPhysics.mapGroundFloor2, wallLabel, false); // Drop after path into cave
+        SpriteCrafter.addSprite(null, 5390, this.floorY - 250, 0, this.mapPhysics.mapGroundDrop, wallLabel, false); // Drop after path into cave
         
         SpriteCrafter.addSprite(null, 5900, this.floorY + 90, 0, this.mapPhysics.mapGroundFloor1, floorLabel, false); // Floor for cave
         SpriteCrafter.addSprite(null, 7150, this.floorY + 91, 0, this.mapPhysics.mapGroundFloor1, floorLabel, false); // Floor for cave
         
         SpriteCrafter.addSprite(null, 6910, this.floorY - 90, 0, this.mapPhysics.mapGroundCave, floorLabel, false); // Cave platforms
-        SpriteCrafter.addSprite(null, 7790, this.floorY + 30, 0, this.mapPhysics.mapGroundCavePassageWalls, wallLabel, false); // Cave end wall
-        SpriteCrafter.addSprite(null, 8300, this.floorY + 50, 0, this.mapPhysics.mapGroundEnd, floorLabel, false); // Cave end wall
+        SpriteCrafter.addSprite(null, 7790, this.floorY - 30, 0, this.mapPhysics.mapGroundCavePassageWalls, wallLabel, false); // Cave end wall
+        SpriteCrafter.addSprite(null, 8300, this.floorY + 50, 0, this.mapPhysics.mapGroundEnd, floorLabel, false); // Floor after cave
     }
 
     createForeground() {
@@ -128,13 +135,13 @@ export default class GameScene extends Phaser.Scene {
     setupCamera() {
         this.cameras.main.startFollow(this.player);
         this.cameras.main.setFollowOffset(0, 150);
-        this.cameras.main.setBounds(10, 0, 9070, this.floorY + 80)
+        const maxCameraBoundY = this.floorY + 80;
+        this.cameras.main.setBounds(10, 0, this.worldWidth, maxCameraBoundY)
         this.cameras.main.setZoom(1.2);
     }
 
     endCutscene(){
         if(this.player.x > 8600){
-            this.playerAbleToMove = false;
             this.end.alpha += 0.005;
             this.end.sprite.alpha = this.end.alpha;
             this.player.setVelocityY(0)
