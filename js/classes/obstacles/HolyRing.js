@@ -28,18 +28,18 @@ export default class HolyRing {
         this.#ring.alpha = 0;
 
         scene.matter.world.on(`collisionstart`, (event, bodyA, bodyB) => {
-            if (bodyB.parent.label !== `player`)
+            if (bodyB.parent.label !== `player` && bodyA.parent.label !== `player`)
                 return;
 
-            if (bodyA.parent === this.#ring.body)
+            if (bodyA.parent === this.#ring.body || bodyB.parent === this.#ring.body )
                 this.appear();
         });
 
         scene.matter.world.on(`collisionend`, (event, bodyA, bodyB) => {
-            if (bodyB.parent.label !== `player`)
+            if (bodyB.parent.label !== `player` && bodyA.parent.label !== `player`)
                 return;
 
-            if (bodyA.parent === this.#ring.body)
+            if (bodyA.parent === this.#ring.body || bodyB.parent === this.#ring.body )
                 this.disappear();
         });
     }
