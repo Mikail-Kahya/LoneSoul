@@ -14,7 +14,8 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
         super (scene.matter.world, posX, posY);
         
         // Logic
-        this.body.label = `player`
+        this.body.label = 'player';
+        this.label = 'player';
         this.body.gravityScale.y = 0.25;
         this.#setupCollision();
         this.#setupEvents(scene);
