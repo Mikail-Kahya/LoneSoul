@@ -89,7 +89,6 @@ export default class RingObstacle extends Obstacle {
         this.#isActive = false;
         player.setState('idle');
         this.#ring.appear();
-        Microphone.instance.highFreq = this.#frequencyCalculator.averageFreq;
-        Debugger.log(`Finished ring obstacle with frequency of: ${Microphone.instance.highFreq}`);
+        Microphone.instance.lowFreq = this.#frequencyCalculator.averageFreq;
     }
 }
