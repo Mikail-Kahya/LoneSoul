@@ -1,4 +1,5 @@
 import Debugger from "./Debugger.js";
+import SpriteCrafter from "./SpriteCrafter.js";
 
 export default class Player extends Phaser.Physics.Matter.Sprite {
     #speed = 2;
@@ -19,10 +20,9 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
         this.#setupEvents(scene);
 
         // Visuals
+        this.depth = SpriteCrafter.playerZ;
         this.#createAnims(scene);
         this.setState('idle');
-
-        Debugger.log(this);
     }
 
     #setupCollision() {
@@ -148,6 +148,11 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
                 this.play('fly', true);
                 break;
         }
+    }
+
+    disableInput() {
+        this.setState('idle');
+        this.#allowInput = false;
     }
 
     update(input)

@@ -30,6 +30,9 @@ export default class SpriteCrafter {
         if (!hasVisuals)
             sprite.setVisible(false);
 
+        if (shape == null || shape == undefined)
+            sprite.setCollisionCategory(null);
+
         return sprite;
     }
 

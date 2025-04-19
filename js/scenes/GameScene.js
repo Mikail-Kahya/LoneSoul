@@ -8,6 +8,7 @@ import Tree from "../classes/obstacles/Tree.js";
 import RingObstacle from "../classes/obstacles/RingObstacle.js";
 import PathObstacle from "../classes/obstacles/PathObstacle.js";
 import LightObstacle from "../classes/obstacles/LightObstacle.js";
+import Cutscene from "../classes/cutscenes/Cutscene.js";
 
 export default class GameScene extends Phaser.Scene {
     constructor() {
@@ -19,19 +20,15 @@ export default class GameScene extends Phaser.Scene {
         this.player = undefined;
         this.mapPhysics = undefined;
         
-        this.images = [];
-        
+        // Obstacles
         this.treeObstacle = undefined;
         this.ringObstacle = undefined;
         this.pathObstacle = undefined;
+        this.lightObstacle = undefined;
 
-        this.end = {
-            alpha: 0,
-            sprite: undefined,
-            endStop: false,
-            fadeOut: undefined,
-            fadeOutAlpha: 0,
-        }
+
+        this.endCutscene = undefined;
+        this.blackScreen = undefined;
     }
 
 
@@ -41,33 +38,15 @@ export default class GameScene extends Phaser.Scene {
 
         this.mapPhysics = this.cache.json.get(`map`);
         this.keys = this.input.keyboard.createCursorKeys();
-        this.createBackground();
-        this.createCollision();
 
-        const treeX = 1250;
-        const treeY = this.floorY - 70;
-        this.treeObstacle = new Tree(this, treeX, treeY);
-        
-        const ringX = 2800;
-        const ringY = this.floorY - 80;
-        const ringHeight = 240;
-        this.ringObstacle = new RingObstacle(this, ringX, ringY, ringHeight);
-
-        const pathX = 3400;
-        const pathY = this.floorY - 265;
-        const pillarStartX = 3450;
-        const pathWidth = 770;
-        this.pathObstacle = new PathObstacle(this, pathX, pathY, pillarStartX, pathWidth, -50, 300);
-
-        const caveX = 6690;
-        const caveY = this.floorY - 430;
-        const caveWidth = 2000;
-        this.lightObstacle = new LightObstacle(this, caveX, caveY, caveWidth);
-
-        const playerX = 100 + 6000;
-        const playerY = this.floorY - 130 - 400;
+        const playerX = 100 + 8000;
+        const playerY = this.floorY - 130;
         this.player = this.add.existing(new Player (this, playerX, playerY));
 
+        this.createBackground();
+        this.createCollision();
+        this.createObstacles();
+        this.createCutscene();
         this.createForeground();
         this.setupCamera();
         Time.update(this.time.now);
@@ -81,8 +60,10 @@ export default class GameScene extends Phaser.Scene {
         this.ringObstacle.update(this.player);
         this.pathObstacle.update(this.player);
         this.lightObstacle.update(this.player);
+        this.endCutscene.update(this.player);
 
-        this.endCutscene();
+        if (this.endCutscene.isDone)
+            this.fadeOut();
     }
 
     createBackground() {
@@ -112,23 +93,47 @@ export default class GameScene extends Phaser.Scene {
         SpriteCrafter.addSprite(null, 8300, this.floorY + 50, 0, this.mapPhysics.mapGroundEnd, floorLabel, false); // Floor after cave
     }
 
+    createObstacles() {
+        const treeX = 1250;
+        const treeY = this.floorY - 70;
+        this.treeObstacle = new Tree(this, treeX, treeY);
+        
+        const ringX = 2800;
+        const ringY = this.floorY - 80;
+        const ringHeight = 240;
+        this.ringObstacle = new RingObstacle(this, ringX, ringY, ringHeight);
+
+        const pathX = 3400;
+        const pathY = this.floorY - 265;
+        const pillarStartX = 3450;
+        const pathWidth = 770;
+        this.pathObstacle = new PathObstacle(this, pathX, pathY, pillarStartX, pathWidth, -50, 300);
+
+        const caveX = 6690;
+        const caveY = this.floorY - 430;
+        const caveWidth = 2000;
+        this.lightObstacle = new LightObstacle(this, caveX, caveY, caveWidth);
+    }
+
     createForeground() {
         const yOffset = -427;
         this.add.image(this.worldWidth * 0.5 , this.floorY + yOffset, 'foreground').depth = SpriteCrafter.foregroundZ;
-        
-        this.anims.create({
-            key: 'end',
-            frames: this.anims.generateFrameNumbers(`end`, {
-                start: 2,
-                end: 21,
-            }),
-            frameRate: 4,
-        });
+    }
 
-        this.end.sprite = this.matter.add.sprite(9070, this.floorY - 130, `end`).setStatic(true).setCollisionCategory(null);
-        this.end.sprite.alpha = this.end.alpha;
-        this.end.fadeOut = this.add.rectangle(8000, this.floorY - 500, 3000, 2000, 0x000000);
-        this.end.fadeOut.alpha = this.end.fadeOutAlpha;
+    createCutscene() {
+        const anim = {
+            start: 2,
+            end: 21,
+            frameRate: 4
+        }
+        const pos = { x: 9070, y: this.floorY - 130 };
+        const trigger = { x: 8600, width: 1000 }
+        const id = 'end';
+
+        this.endCutscene = new Cutscene(this, pos, trigger, id, anim, true);
+
+        this.blackScreen = this.add.rectangle(8000, this.floorY - 500, 3000, 2000, 0x000000);
+        this.blackScreen.alpha = 0;
     }
     
 
@@ -140,6 +145,20 @@ export default class GameScene extends Phaser.Scene {
         this.cameras.main.setZoom(1.2);
     }
 
+    fadeOut() {
+        const fadeOutTime = 2; // in seconds
+        if (this.blackScreen.alpha < 0.00001) { // account for epsilon
+            setTimeout(() => {
+                document.querySelector(`.end-wrapper`).style.display = `flex`;
+            }, fadeOutTime * 1000);
+        }
+        
+        const fadeRate = 2; 
+        this.blackScreen.alpha += Time.deltaTime * (fadeOutTime / fadeRate);
+        this.blackScreen.depth = SpriteCrafter.foregroundZ * 2;
+    }
+
+    /*
     endCutscene(){
         if(this.player.x > 8600){
             this.end.alpha += 0.005;
@@ -164,11 +183,10 @@ export default class GameScene extends Phaser.Scene {
             }
         }
         if (this.end.fadeOutAlpha >= 1) {
-            setTimeout(() => {
-                document.querySelector(`.end-wrapper`).style.display = `flex`;
-            }, 2000);
+            
         }
     }
+        */
 }
 
 
