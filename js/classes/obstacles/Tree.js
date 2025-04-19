@@ -41,8 +41,6 @@ export default class Tree extends Obstacle {
         {
             if (this.finished)
                 this.#fall();
-            //else
-            //    this.#elapsedShakeTime = 0;
             return;    
         }
 
@@ -54,7 +52,6 @@ export default class Tree extends Obstacle {
         {
             this.finish();
             Microphone.instance.highFreq = this.#frequencyCalculator.averageFreq;
-            Debugger.log(`High frequency: ${this.#frequencyCalculator.averageFreq}`);
         }
     }
 

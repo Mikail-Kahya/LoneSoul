@@ -1,4 +1,5 @@
 import * as Math from "../Utils/Utils.js";
+import Debugger from "./Debugger.js";
 
 export default class Microphone {
     // =========
@@ -28,7 +29,7 @@ export default class Microphone {
 
 
     // mic use
-    #lowFreq = 100;
+    #lowFreq = 0;
     #highFreq = 500;
     #level = 0;
 
@@ -62,10 +63,12 @@ export default class Microphone {
     // ====== Setters ========
     set highFreq(freq) {
         this.#highFreq = max(freq, this.#lowFreq);
+        Debugger.log(`High frequency: ${this.#highFreq}`);
     }
 
     set lowFreq(freq) {
         this.#lowFreq = min(freq, this.#highFreq);
+        Debugger.log(`High frequency: ${this.#lowFreq}`);
     }
 
 
