@@ -1,7 +1,8 @@
 <h1>Lone Soul</h1>
 <p><strong>
   Welcome to my recently remade project from a few years ago. Lone Soul is a web game inspired by <em>Limbo</em>, <em>One Hand Clapping</em>, and <em>Hollow Knight</em>.
-  Lone Soul can be played through the link on <a target="_blank" href="https://mikailkahya.netlify.app">my website</a>. Make sure to check that out! 
+  Lone Soul can be played through the link <a target="_blank" href="https://lone-soul.netlify.app">here (<em>redirect</em>)</a>. Make sure to check that out! 
+  Feel free to check out any of my other projects on <a target="_blank" href="https://mikailkahya.netlify.app">my portfolio (<em>redirect</em>)</a>.
 </strong></p>
 
 <br  />
