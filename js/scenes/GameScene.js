@@ -100,7 +100,7 @@ export default class GameScene extends Phaser.Scene {
         
         const ringX = 2800;
         const ringY = this.floorY - 80;
-        const ringHeight = 240;
+        const ringHeight = 100;
         this.ringObstacle = new RingObstacle(this, ringX, ringY, ringHeight);
 
         const pathX = 3400;
